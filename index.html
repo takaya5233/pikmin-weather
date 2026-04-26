@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pikmin & Weather Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
+
+        :root {
+            --bg-gradient: linear-gradient(180deg, #e0f7fa 0%, #fff9c4 100%);
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --text-main: #4e342e;
+            --text-sub: #795548;
+            --accent-blue: #03a9f4;
+            --ok: #4caf50;
+            --warn: #fb8c00;
+            --ng: #f44336;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Zen Maru Gothic', sans-serif;
+            background-color: #333;
+            display: flex; justify-content: center;
+            color: var(--text-main);
+        }
+
+        .phone-canvas {
+            width: 100%; max-width: 430px; min-height: 100vh;
+            background: var(--bg-gradient);
+            display: flex; flex-direction: column; gap: 12px;
+            padding: 15px; box-sizing: border-box;
+        }
+
+        #datetime-section { text-align: center; margin: 10px 0; }
+        #date { font-size: 1.1rem; font-weight: 700; color: var(--text-sub); }
+        #time { font-size: 3.5rem; font-weight: 900; margin: -5px 0; }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 2px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .section-title { font-size: 0.75rem; font-weight: 900; color: var(--text-sub); margin-bottom: 10px; display: block; }
+
+        .current-main { display: flex; justify-content: space-between; align-items: center; }
+        .temp-display { font-size: 2.8rem; font-weight: 700; }
+        
+        .badges { display: flex; flex-direction: column; gap: 4px; }
+        .badge {
+            font-size: 0.7rem; font-weight: 700; padding: 4px 10px;
+            border-radius: 12px; background: rgba(255,255,255,0.9);
+            display: flex; align-items: center; gap: 5px;
+        }
+
+        .hourly-scroll { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 8px; }
+        .hourly-scroll::-webkit-scrollbar { display: none; }
+        .hourly-item { text-align: center; min-width: 42px; }
+        .h-time { font-size: 0.65rem; font-weight: 700; color: var(--text-sub); }
+        .h-icon { font-size: 1.3rem; margin: 4px 0; display: block; }
+        .h-temp { font-size: 0.85rem; font-weight: 700; }
+        .h-prob { font-size: 0.6rem; color: var(--accent-blue); font-weight: 900; }
+
+        .sun-row { display: flex; justify-content: space-around; margin-top: 10px; font-size: 0.75rem; font-weight: 700; color: var(--text-sub); }
+
+        .weekly-grid { display: flex; justify-content: space-between; }
+        .w-item { flex: 1; text-align: center; font-size: 0.7rem; font-weight: 700; }
+        .w-icon { font-size: 1.2rem; margin: 3px 0; display: block; }
+
+        /* ピクミン画像用 (横並び・文字が上) */
+        .pikmin-container { display: flex; gap: 10px; }
+        .pikmin-card {
+            flex: 1;
+            background: white; border-radius: 18px; overflow: hidden;
+            border: 2px solid var(--glass-border);
+            display: flex; flex-direction: column;
+        }
+        .pikmin-label { 
+            padding: 6px 4px; 
+            font-size: 0.7rem; 
+            font-weight: 900; 
+            text-align: center; 
+            background: #fff; 
+            border-bottom: 1px solid #eee; /* 文字の下に線 */
+        }
+        .pikmin-card img { width: 100%; height: auto; display: block; }
+
+        .dot { height: 7px; width: 7px; border-radius: 50%; display: inline-block; }
+        .bg-ok { background-color: var(--ok); }
+        .bg-warn { background-color: var(--warn); }
+        .bg-ng { background-color: var(--ng); }
+    </style>
+</head>
+<body>
+
+<div class="phone-canvas">
+    <header id="datetime-section">
+        <div id="date">--月--日 (--)</div>
+        <div id="time">00:00</div>
+    </header>
+
+    <!-- 現在の状況 -->
+    <section class="glass-card">
+        <span class="section-title">🐾 今日のあんしん予報</span>
+        <div class="current-main">
+            <div id="current-temp" class="temp-display">--°</div>
+            <div id="index-container" class="badges"></div>
+            <div id="current-icon" style="font-size: 2.5rem;">☀️</div>
+        </div>
+    </section>
+
+    <!-- 3-18時予報 -->
+    <section class="glass-card">
+        <span class="section-title">☁️ 3時〜18時の空もよう</span>
+        <div id="hourly-list" class="hourly-scroll"></div>
+        <div id="sun-info" class="sun-row"></div>
+    </section>
+
+    <!-- 週間予報 -->
+    <section class="glass-card">
+        <span class="section-title">📅 週間予報</span>
+        <div id="weekly-list" class="weekly-grid"></div>
+    </section>
+
+    <!-- ピクミン -->
+    <section class="glass-card">
+        <span class="section-title">🌿 ピクミンブルーム 最新情報</span>
+        <div class="pikmin-container">
+            <div class="pikmin-card">
+                <div class="pikmin-label">今月のお題</div>
+                <img id="pikmin-task-img" src="" alt="今月のお題">
+            </div>
+            <div class="pikmin-card">
+                <div class="pikmin-label">ボーナス報酬</div>
+                <img id="pikmin-bonus-img" src="" alt="ボーナス報酬">
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    // --- 画像URLの設定 ---
+    const PIKMIN_TASK_IMAGE = 'https://lh3.googleusercontent.com/aOe_CqCJdFevS2otcFy913LHXkdbCpGQ4idw-DZqD6qYClbXBxMydcbSm5NhADdjoUnRu9Hg0hsm3RUgprGpSm6mss9BlI6_16k=e365-pa-nu-w1700';
+    const PIKMIN_BONUS_IMAGE = 'https://lh3.googleusercontent.com/jaz1ERppQaebuacrS6xyumT_WFuO2fpw20XqgzAlMyxMj5mB6nerpzA3C7nh2xKtZTRGztpar05amhvcMod2RzRVKUUoYGy1UQ=e365-pa-nu-w1700';
+
+    document.getElementById('pikmin-task-img').src = PIKMIN_TASK_IMAGE;
+    document.getElementById('pikmin-bonus-img').src = PIKMIN_BONUS_IMAGE;
+
+    const weatherIcons = {
+        0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️", 45: "🌫️", 48: "🌫️",
+        51: "🌦️", 53: "🌦️", 55: "🌦️", 61: "🌧️", 63: "🌧️", 65: "🌧️",
+        80: "🌦️", 81: "🌧️", 82: "🌧️", 95: "⚡"
+    };
+
+    function updateClock() {
+        const now = new Date();
+        const days = ['日', '月', '火', '水', '木', '金', '土'];
+        document.getElementById('date').innerText = `${now.getMonth() + 1}月${now.getDate()}日 (${days[now.getDay()]})`;
+        document.getElementById('time').innerText = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(fetchWeather);
+        }
+    }
+
+    async function fetchWeather(pos) {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,weathercode,precipitation_probability,precipitation,windspeed_10m&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=Asia%2FTokyo`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+        renderData(data);
+    }
+
+    function renderData(data) {
+        const now = new Date();
+        const hr = now.getHours();
+
+        // 指数判定
+        let walk = { text: "おさんぽ OK", cls: "bg-ok" };
+        if (data.hourly.precipitation[hr] > 0) walk = { text: "おさんぽ 不可", cls: "bg-ng" };
+        else if (data.hourly.precipitation_probability[hr] > 30) walk = { text: "おさんぽ 注意", cls: "bg-warn" };
+
+        let laundry = { text: "お外干し◎", cls: "bg-ok" };
+        const maxProb = Math.max(...data.hourly.precipitation_probability.slice(8, 17));
+        if (maxProb > 50) laundry = { text: "お部屋干し", cls: "bg-ng" };
+        else if (maxProb > 25) laundry = { text: "お空に注意", cls: "bg-warn" };
+
+        let bike = { text: "自転車 通学OK", cls: "bg-ok" };
+        const bikeRain = Math.max(data.hourly.precipitation[hr], (data.hourly.precipitation[hr+1] || 0));
+        const bikeWind = data.hourly.windspeed_10m[hr];
+        if (bikeRain > 0.5 || bikeWind > 10) bike = { text: "自転車 無理せず", cls: "bg-ng" };
+        else if (bikeRain > 0 || bikeWind > 6) bike = { text: "自転車 注意して", cls: "bg-warn" };
+
+        document.getElementById('current-temp').innerText = `${Math.round(data.current_weather.temperature)}°`;
+        document.getElementById('current-icon').innerText = weatherIcons[data.current_weather.weathercode] || "☀️";
+        
+        document.getElementById('index-container').innerHTML = `
+            <div class="badge"><span class="dot ${walk.cls}"></span>${walk.text}</div>
+            <div class="badge"><span class="dot ${laundry.cls}"></span>${laundry.text}</div>
+            <div class="badge"><span class="dot ${bike.cls}"></span>${bike.text}</div>
+        `;
+
+        const hourlyList = document.getElementById('hourly-list');
+        hourlyList.innerHTML = '';
+        const today = new Date().toLocaleDateString('sv');
+        data.hourly.time.forEach((t, i) => {
+            const dPart = t.split('T')[0];
+            const h = parseInt(t.split('T')[1]);
+            if (dPart === today && h >= 3 && h <= 18) {
+                hourlyList.innerHTML += `
+                    <div class="hourly-item">
+                        <div class="h-time">${h}時</div>
+                        <span class="h-icon">${weatherIcons[data.hourly.weathercode[i]] || "☀️"}</span>
+                        <div class="h-temp">${Math.round(data.hourly.temperature_2m[i])}°</div>
+                        <div class="h-prob">${data.hourly.precipitation_probability[i]}%</div>
+                    </div>
+                `;
+            }
+        });
+
+        document.getElementById('sun-info').innerHTML = `
+            <span>🌅 日出 ${data.daily.sunrise[0].split('T')[1]}</span>
+            <span>🌇 日没 ${data.daily.sunset[0].split('T')[1]}</span>
+        `;
+
+        const weeklyList = document.getElementById('weekly-list');
+        weeklyList.innerHTML = '';
+        const dayLabels = ['日', '月', '火', '水', '木', '金', '土'];
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(data.daily.time[i]);
+            weeklyList.innerHTML += `
+                <div class="w-item">
+                    <div class="w-day">${i === 0 ? '今日' : dayLabels[d.getDay()]}</div>
+                    <span class="w-icon">${weatherIcons[data.daily.weathercode[i]] || "☀️"}</span>
+                    <div style="color:var(--ng)">${Math.round(data.daily.temperature_2m_max[i])}°</div>
+                    <div style="color:var(--accent-blue)">${Math.round(data.daily.temperature_2m_min[i])}°</div>
+                </div>
+            `;
+        }
+    }
+
+    getLocation();
+</script>
+
+</body>
+</html>
