@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pikmin & Weather Dashboard</title>
+    <title>Pikmin & Wisdom Dashboard</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
 
@@ -34,10 +34,52 @@
             padding: 15px; box-sizing: border-box;
         }
 
-        #datetime-section { text-align: center; margin: 10px 0; }
+        /* 時計セクション */
+        #datetime-section { text-align: center; margin: 10px 0 5px; }
         #date { font-size: 1.1rem; font-weight: 700; color: var(--text-sub); }
         #time { font-size: 3.5rem; font-weight: 900; margin: -5px 0; }
 
+        /* ピクミンのひとこと（ふきだし） */
+        .pikmin-quote-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 10px 10px;
+        }
+        .pikmin-avatar {
+            font-size: 2.5rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+        .speech-bubble {
+            position: relative;
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 12px 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            font-size: 0.85rem;
+            font-weight: 700;
+            line-height: 1.5;
+            flex: 1;
+        }
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-style: solid;
+            border-width: 8px 10px 8px 0;
+            border-color: transparent #ffffff transparent transparent;
+        }
+        .quote-author {
+            display: block;
+            font-size: 0.65rem;
+            color: var(--text-sub);
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        /* 共通カード */
         .glass-card {
             background: var(--glass-bg);
             backdrop-filter: blur(8px);
@@ -74,7 +116,6 @@
         .w-item { flex: 1; text-align: center; font-size: 0.7rem; font-weight: 700; }
         .w-icon { font-size: 1.2rem; margin: 3px 0; display: block; }
 
-        /* ピクミン画像用 (横並び・文字が上) */
         .pikmin-container { display: flex; gap: 10px; }
         .pikmin-card {
             flex: 1;
@@ -82,14 +123,7 @@
             border: 2px solid var(--glass-border);
             display: flex; flex-direction: column;
         }
-        .pikmin-label { 
-            padding: 6px 4px; 
-            font-size: 0.7rem; 
-            font-weight: 900; 
-            text-align: center; 
-            background: #fff; 
-            border-bottom: 1px solid #eee; /* 文字の下に線 */
-        }
+        .pikmin-label { padding: 6px 4px; font-size: 0.7rem; font-weight: 900; text-align: center; background: #fff; border-bottom: 1px solid #eee; }
         .pikmin-card img { width: 100%; height: auto; display: block; }
 
         .dot { height: 7px; width: 7px; border-radius: 50%; display: inline-block; }
@@ -105,6 +139,15 @@
         <div id="date">--月--日 (--)</div>
         <div id="time">00:00</div>
     </header>
+
+    <!-- ピクミンのひとことセクション -->
+    <div class="pikmin-quote-container">
+        <div class="pikmin-avatar">🌱</div>
+        <div class="speech-bubble">
+            <span id="daily-quote">Loading...</span>
+            <span id="quote-author" class="quote-author"></span>
+        </div>
+    </div>
 
     <!-- 現在の状況 -->
     <section class="glass-card">
@@ -146,27 +189,46 @@
 </div>
 
 <script>
-    // --- 画像URLの設定 ---
+    // --- ピクミンの画像URL ---
     const PIKMIN_TASK_IMAGE = 'https://lh3.googleusercontent.com/aOe_CqCJdFevS2otcFy913LHXkdbCpGQ4idw-DZqD6qYClbXBxMydcbSm5NhADdjoUnRu9Hg0hsm3RUgprGpSm6mss9BlI6_16k=e365-pa-nu-w1700';
     const PIKMIN_BONUS_IMAGE = 'https://lh3.googleusercontent.com/jaz1ERppQaebuacrS6xyumT_WFuO2fpw20XqgzAlMyxMj5mB6nerpzA3C7nh2xKtZTRGztpar05amhvcMod2RzRVKUUoYGy1UQ=e365-pa-nu-w1700';
 
     document.getElementById('pikmin-task-img').src = PIKMIN_TASK_IMAGE;
     document.getElementById('pikmin-bonus-img').src = PIKMIN_BONUS_IMAGE;
 
+    // --- 前向きになれる言葉リスト ---
+    const wisdomQuotes = [
+        { text: "自心の源をさとるを、さとりという。あなたの心の中に答えがあります。", author: "空海" },
+        { text: "心を明るくしていれば、どこにいても幸せは見つかります。", author: "空海" },
+        { text: "一隅を照らす。今いる場所で、あなたらしく輝けばよいのです。", author: "空海（伝）" },
+        { text: "愛することは、許すことです。慈しむことです。", author: "瀬戸内寂聴" },
+        { text: "笑うことは、最良の供養であり、最良の薬です。今日を笑って過ごしましょう。", author: "瀬戸内寂聴" },
+        { text: "どんなに苦しい時も、必ず出口はあります。焦らずに歩きましょう。", author: "瀬戸内寂聴" },
+        { text: "若いうちの苦労は買ってでもしなさい。それはすべてあなたの宝になります。", author: "瀬戸内寂聴" },
+        { text: "自分を大切に。あなたが幸せでいることが、周りを幸せにします。", author: "瀬戸内寂聴" },
+        { text: "心暗きときは、即ち遭う所ことごとく禍なり。心に光を灯しましょう。", author: "空海" }
+    ];
+
+    function updateClockAndQuote() {
+        const now = new Date();
+        const days = ['日', '月', '火', '水', '木', '金', '土'];
+        document.getElementById('date').innerText = `${now.getMonth() + 1}月${now.getDate()}日 (${days[now.getDay()]})`;
+        document.getElementById('time').innerText = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+        
+        // 日替わりで言葉を表示（日付を元に選択）
+        const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+        const quote = wisdomQuotes[dayOfYear % wisdomQuotes.length];
+        document.getElementById('daily-quote').innerText = quote.text;
+        document.getElementById('quote-author').innerText = `― ${quote.author}`;
+    }
+    updateClockAndQuote();
+    setInterval(updateClockAndQuote, 60000); // 1分ごとに更新
+
     const weatherIcons = {
         0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️", 45: "🌫️", 48: "🌫️",
         51: "🌦️", 53: "🌦️", 55: "🌦️", 61: "🌧️", 63: "🌧️", 65: "🌧️",
         80: "🌦️", 81: "🌧️", 82: "🌧️", 95: "⚡"
     };
-
-    function updateClock() {
-        const now = new Date();
-        const days = ['日', '月', '火', '水', '木', '金', '土'];
-        document.getElementById('date').innerText = `${now.getMonth() + 1}月${now.getDate()}日 (${days[now.getDay()]})`;
-        document.getElementById('time').innerText = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
 
     function getLocation() {
         if (navigator.geolocation) {
