@@ -3,265 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pikmin Dashboard Large</title>
+    <title>Sunshine Dashboard</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
-
         :root {
-            --bg-gradient: linear-gradient(180deg, #e0f7fa 0%, #fff9c4 100%);
-            --glass-bg: rgba(255, 255, 255, 0.75);
-            --glass-border: rgba(255, 255, 255, 0.9);
-            --text-main: #4e342e;
-            --text-sub: #795548;
-            --ok: #28cd41; 
-            --warn: #ff9500;
-            --ng: #ff3b30;
+            --bg-gradient: linear-gradient(180deg, #FFF9E1 0%, #FFD1A9 50%, #FFB7B2 100%);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --text-main: #5D4037; --text-sub: #8D6E63;
+            --ok: #28cd41; --warn: #FF9800; --ng: #FF5252;
         }
-
-        body {
-            margin: 0; padding: 0;
-            font-family: 'Zen Maru Gothic', sans-serif;
-            background-color: #333;
-            display: flex; justify-content: center;
-            color: var(--text-main);
-        }
-
-        .phone-canvas {
-            width: 100%; max-width: 430px; min-height: 100vh;
-            background: var(--bg-gradient);
-            display: flex; flex-direction: column; gap: 10px;
-            padding: 12px 10px 40px;
-            box-sizing: border-box;
-        }
-
-        /* 日付・時間：大幅にサイズアップ */
-        #datetime-section { text-align: center; margin: 8px 0; }
+        body { margin: 0; padding: 0; font-family: 'Zen Maru Gothic', sans-serif; background: var(--bg-gradient); display: flex; justify-content: center; color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
+        .phone-canvas { width: 100%; max-width: 430px; display: flex; flex-direction: column; gap: 10px; padding: 15px 12px 60px; box-sizing: border-box; }
+        
+        /* コンテンツ */
+        #dt { text-align: center; margin: 15px 0 5px; }
+        #time { font-size: 4.5rem; font-weight: 900; margin: -5px 0; letter-spacing: -2px; }
         #date { font-size: 1.2rem; font-weight: 700; color: var(--text-sub); }
-        #time { font-size: 4.2rem; font-weight: 900; margin: -8px 0; letter-spacing: -2px; }
+        
+        .quote-c { margin: 10px 5px; background: #fff; padding: 15px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .quote-text { font-size: 0.9rem; font-weight: 700; line-height: 1.6; }
+        .quote-author { font-size: 0.7rem; color: var(--text-sub); text-align: right; display: block; margin-top: 6px; }
 
-        /* ふきだし：文字サイズアップ */
-        .pikmin-quote-container { display: flex; align-items: center; gap: 8px; margin: 0 4px; }
-        .pikmin-avatar { font-size: 2.2rem; }
-        .speech-bubble {
-            position: relative; background: #ffffff; border-radius: 18px;
-            padding: 12px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            font-size: 0.95rem; font-weight: 700; line-height: 1.5; flex: 1;
+        .card { background: var(--glass-bg); backdrop-filter: blur(8px); border: 2px solid #fff; border-radius: 24px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .section-title { font-size: 0.85rem; font-weight: 900; color: var(--text-sub); margin-bottom: 10px; display: block; }
+
+        /* 今日のあんしん予報：中央揃えレイアウト */
+        .current-main { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .left-weather-stack {
+            display: flex; flex-direction: column; align-items: center;
+            min-width: 100px; background: rgba(255,255,255,0.4);
+            padding: 8px 4px; border-radius: 16px;
         }
-        .speech-bubble::after {
-            content: ''; position: absolute; left: -10px; top: 50%;
-            transform: translateY(-50%); border-style: solid;
-            border-width: 8px 10px 8px 0; border-color: transparent #ffffff transparent transparent;
-        }
-        .quote-author { display: block; font-size: 0.75rem; color: var(--text-sub); margin-top: 4px; text-align: right; }
+        .weather-top-row { display: flex; align-items: center; gap: 4px; justify-content: center; width: 100%; line-height: 1; }
+        .current-icon-box { font-size: 1.8rem; }
+        .temp-display { font-size: 2.2rem; font-weight: 700; letter-spacing: -1px; }
+        .today-temp-range { font-size: 0.8rem; font-weight: 700; margin-top: 4px; text-align: center; }
 
-        .glass-card {
-            background: var(--glass-bg); backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px); border: 2px solid var(--glass-border);
-            border-radius: 24px; padding: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-
-        /* セクションタイトル：サイズアップ */
-        .section-title { font-size: 0.9rem; font-weight: 900; color: var(--text-sub); margin-bottom: 10px; display: block; }
-
-        /* 今日のあんしん予報：フォントサイズ最適化 */
-        .current-main { display: flex; justify-content: space-between; align-items: center; gap: 4px; margin-bottom: 12px; }
-        .temp-display { font-size: 3rem; font-weight: 700; min-width: 70px; letter-spacing: -1px; }
         .badges { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
         .badge {
-            font-size: min(0.85rem, 3.8vw); /* 1行に収まる限界サイズ */
-            font-weight: 900; padding: 4px 8px;
-            border-radius: 10px; background: rgba(255,255,255,1);
+            font-size: clamp(0.65rem, 3.1vw, 0.85rem); 
+            font-weight: 900; padding: 5px 8px;
+            border-radius: 10px; background: #fff;
             display: flex; align-items: center; gap: 6px;
             white-space: nowrap; overflow: hidden;
             border: 1px solid rgba(0,0,0,0.03);
         }
-        .current-icon-box { font-size: 2.8rem; text-align: right; min-width: 45px; }
+        .dot { height: 8px; width: 8px; border-radius: 50%; flex-shrink: 0; }
 
-        /* 明日の予報 */
-        .tomorrow-box {
-            border-top: 2px dashed rgba(0,0,0,0.08);
-            padding-top: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .tomorrow-label { font-size: 0.85rem; font-weight: 900; color: var(--text-sub); }
-        .tomorrow-info { display: flex; align-items: center; gap: 12px; }
-        .tom-temp { font-size: 1.1rem; font-weight: 700; }
+        .tomorrow-box { border-top: 1px dashed rgba(0,0,0,0.1); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .tomorrow-label { font-size: 0.8rem; font-weight: 900; color: var(--text-sub); }
+        .tom-temp { font-size: 1rem; font-weight: 700; }
 
-        /* 予報スクロール・週間：全体的にサイズアップ */
-        .hourly-scroll { display: flex; overflow-x: auto; gap: 16px; padding-bottom: 8px; }
+        /* 予報スクロール */
+        .hourly-scroll { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 10px; }
         .hourly-scroll::-webkit-scrollbar { display: none; }
-        .hourly-item { text-align: center; min-width: 45px; }
-        .h-time { font-size: 0.75rem; font-weight: 700; color: var(--text-sub); }
+        .h-item { text-align: center; min-width: 45px; }
         .h-icon { font-size: 1.5rem; margin: 4px 0; display: block; }
-        .h-temp { font-size: 0.95rem; font-weight: 700; }
-        .h-prob { font-size: 0.65rem; color: #03a9f4; font-weight: 900; }
 
-        .sun-row { display: flex; justify-content: space-around; margin-top: 10px; font-size: 0.8rem; font-weight: 700; color: var(--text-sub); border-top: 1px dashed rgba(0,0,0,0.05); padding-top: 10px; }
+        .hourly-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 10px; padding-top: 10px;
+            font-size: 0.75rem; font-weight: 700; color: var(--text-sub);
+            border-top: 1px dashed rgba(0,0,0,0.1);
+        }
 
-        .weekly-grid { display: flex; justify-content: space-between; }
-        .w-item { flex: 1; text-align: center; font-size: 0.8rem; font-weight: 700; }
-        .w-icon { font-size: 1.4rem; margin: 4px 0; display: block; }
+        .weekly { display: flex; justify-content: space-between; text-align: center; font-size: 0.75rem; font-weight: 700; }
+        .w-icon { font-size: 1.3rem; margin: 4px 0; display: block; }
 
-        .p-container { display: flex; flex-direction: column; gap: 12px; }
-        .p-card { background: white; border-radius: 22px; overflow: hidden; border: 2px solid var(--glass-border); }
-        .p-label { padding: 10px; font-size: 0.85rem; font-weight: 900; text-align: center; background: #fff; border-bottom: 1px solid #eee; }
-        .p-card img { width: 100%; height: auto; display: block; }
-
-        .dot { height: 9px; width: 9px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-        .bg-ok { background-color: var(--ok); }
-        .bg-warn { background-color: var(--warn); }
-        .bg-ng { background-color: var(--ng); }
+        .p-img-card { background: #fff; border-radius: 20px; overflow: hidden; margin-top: 10px; border: 1px solid #eee; }
+        .p-img-card img { width: 100%; height: auto; display: block; }
     </style>
 </head>
 <body>
-
 <div class="phone-canvas">
-    <header id="datetime-section">
-        <div id="date">--月--日 (--)</div>
+    <header id="dt">
+        <div id="date">...</div>
         <div id="time">00:00</div>
     </header>
 
-    <div class="pikmin-quote-container">
-        <div class="pikmin-avatar">🌱</div>
-        <div class="speech-bubble">
-            <span id="daily-quote">...</span>
-            <span class="quote-author">― 空海</span>
-        </div>
+    <div class="quote-c">
+        <span id="quote" class="quote-text">...</span>
+        <span class="quote-author">― 空海</span>
     </div>
 
-    <section class="glass-card">
-        <span class="section-title">🐾 今日のあんしん予報</span>
+    <section class="card">
+        <span class="section-title">今日のあんしん予報</span>
         <div class="current-main">
-            <div id="current-temp" class="temp-display">--°</div>
-            <div id="index-container" class="badges"></div>
-            <div id="current-icon" class="current-icon-box">☀️</div>
+            <div class="left-weather-stack">
+                <div class="weather-top-row">
+                    <div id="c-icon" class="current-icon-box">☀️</div>
+                    <div id="c-temp" class="temp-display">--°</div>
+                </div>
+                <div id="c-range" class="today-temp-range">-- / --</div>
+            </div>
+            <div id="badges" class="badges"></div>
         </div>
-        
         <div class="tomorrow-box">
-            <div class="tomorrow-label">🗓 明日の予報</div>
-            <div class="tomorrow-info" id="tomorrow-info"></div>
+            <span class="tomorrow-label">明日の予報</span>
+            <div id="tom-info" style="display:flex; align-items:center; gap:10px;"></div>
         </div>
     </section>
 
-    <section class="glass-card">
-        <span class="section-title">☁️ 日没までの空もよう</span>
-        <div id="hourly-list" class="hourly-scroll"></div>
-        <div id="sun-info" class="sun-row"></div>
+    <section class="card">
+        <span class="section-title">日没までの空もよう</span>
+        <div id="h-list" class="hourly-scroll"></div>
+        <div id="h-foot" class="hourly-footer"></div>
     </section>
 
-    <section class="glass-card">
-        <span class="section-title">📅 週間予報</span>
-        <div id="weekly-list" class="weekly-grid"></div>
+    <section class="card">
+        <span class="section-title">週間予報</span>
+        <div id="w-list" class="weekly"></div>
     </section>
 
-    <section class="glass-card">
-        <span class="section-title">🌿 ピクミンブルーム 最新情報</span>
-        <div class="p-container">
-            <div class="p-card">
-                <div class="p-label">今月のお題</div>
-                <img src="https://lh3.googleusercontent.com/aOe_CqCJdFevS2otcFy913LHXkdbCpGQ4idw-DZqD6qYClbXBxMydcbSm5NhADdjoUnRu9Hg0hsm3RUgprGpSm6mss9BlI6_16k=e365-pa-nu-w1700">
-            </div>
-            <div class="p-card">
-                <div class="p-label">ボーナス報酬</div>
-                <img src="https://lh3.googleusercontent.com/jaz1ERppQaebuacrS6xyumT_WFuO2fpw20XqgzAlMyxMj5mB6nerpzA3C7nh2xKtZTRGztpar05amhvcMod2RzRVKUUoYGy1UQ=e365-pa-nu-w1700">
-            </div>
-        </div>
+    <section class="card">
+        <span class="section-title">ピクミンブルーム 最新情報</span>
+        <div class="p-img-card"><div style="font-size:0.75rem; font-weight:900; text-align:center; padding:6px;">今月のお題</div><img src="https://lh3.googleusercontent.com/aOe_CqCJdFevS2otcFy913LHXkdbCpGQ4idw-DZqD6qYClbXBxMydcbSm5NhADdjoUnRu9Hg0hsm3RUgprGpSm6mss9BlI6_16k=e365-pa-nu-w1700"></div>
+        <div class="p-img-card"><div style="font-size:0.75rem; font-weight:900; text-align:center; padding:6px;">ボーナス報酬</div><img src="https://lh3.googleusercontent.com/jaz1ERppQaebuacrS6xyumT_WFuO2fpw20XqgzAlMyxMj5mB6nerpzA3C7nh2xKtZTRGztpar05amhvcMod2RzRVKUUoYGy1UQ=e365-pa-nu-w1700"></div>
     </section>
 </div>
 
 <script>
-    const kukaiQuotes = [
-        "心暗きときは、即ち遭う所ことごとく禍なり。","自心の源をさとるを、さとりという。心に答えがあります。","心を明るくしていれば、どこにいても幸せは見つかります。","ものの興廃は、必ず人に由る。すべてはあなた次第です。","それ、仏法遥かにあらず。心の中にこそ真実があるのです。","一隅を照らす。あなたらしく輝けばよいのです。","人の一生は、心ひとつの置きどころ。明るい方を向きましょう。","今この瞬間を大切に。一歩ずつ、静かに進んでいきましょう。"
-    ];
-
-    function updateClock() {
-        const now = new Date();
-        const days = ['日', '月', '火', '水', '木', '金', '土'];
-        document.getElementById('date').innerText = (now.getMonth() + 1) + '月' + now.getDate() + '日 (' + days[now.getDay()] + ')';
-        document.getElementById('time').innerText = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    const kukaiQuotes = ["心暗きときは、即ち遭う所ことごとく禍なり。","自心の源をさとるを、さとりという。心に答えがあります。","心を明るくしていれば、どこにいても幸せは見つかります。","ものの興廃は、必ず人に由る。すべてはあなた次第です。","それ、仏法遥かにあらず。心の中にこそ真実がある。","一隅を照らす。あなたらしく輝けばよいのです。","人の一生は、心ひとつの置きどころ。明るい方を向きましょう。","今この瞬間を大切に。一歩ずつ、静かに進んでいきましょう。","願わくは、この功徳を以て、あまねく一切に及ぼし、仏道を成ぜん。"];
+    const weatherIcons = {0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌦️",61:"🌧️",63:"🌧️",65:"🌧️",80:"🌦️",81:"🌧️",82:"🌧️",95:"⚡"};
+    
+    function updateQuote() {
+        let pool = JSON.parse(localStorage.getItem('qp') || "[]");
+        if (pool.length === 0) pool = kukaiQuotes.map((_, i) => i);
+        const idx = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
+        localStorage.setItem('qp', JSON.stringify(pool));
+        document.getElementById('quote').innerText = kukaiQuotes[idx];
     }
 
-    const weatherIcons = {0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️", 45: "🌫️", 48: "🌫️", 51: "🌦️", 53: "🌦️", 55: "🌦️", 61: "🌧️", 63: "🌧️", 65: "🌧️", 80: "🌦️", 81: "🌧️", 82: "🌧️", 95: "⚡"};
-
-    function getFashion(temp) {
-        if (temp < 5) return "ダウン+マフラー必須";
-        if (temp < 10) return "冬コート+マフラー";
-        if (temp < 15) return "厚手ニット or コート";
-        if (temp < 20) return "長袖 or 薄手の羽織";
-        if (temp < 25) return "半袖+薄手の羽織";
-        return "半袖1枚でOK";
+    function updateTime() {
+        const n = new Date(); const d = ['日','月','火','水','木','金','土'];
+        document.getElementById('date').innerText = (n.getMonth()+1)+'月'+n.getDate()+'日 ('+d[n.getDay()]+')';
+        document.getElementById('time').innerText = n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
     }
 
+    function getFashion(t) {
+        if(t<5) return "服装：ダウンであったかく"; if(t<10) return "服装：冬コートが必要だよ"; if(t<15) return "服装：厚手のニットが◎"; if(t<20) return "服装：長袖か羽織ものを用意"; if(t<25) return "服装：半袖＋薄手の羽織が◎"; return "服装：半袖1枚で大丈夫";
+    }
+    
     async function fetchWeather(pos) {
         const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true&hourly=temperature_2m,weathercode,precipitation_probability,precipitation&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=Asia%2FTokyo&models=best_match`);
         const data = await res.json();
-        renderData(data);
-    }
-
-    function renderData(data) {
         const hr = new Date().getHours();
+        
+        let walk = data.hourly.precipitation[hr] > 0 ? {t:"散歩：雨が降ってるよ",c:"#FF5252"} : {t:"散歩：今なら大丈夫だよ",c:"#28cd41"};
+        let laundry = Math.max(...data.hourly.precipitation_probability.slice(8,17)) > 40 ? {t:"洗濯：部屋干しが安心だよ",c:"#FF5252"} : {t:"洗濯：外で乾くよ",c:"#28cd41"};
 
-        // 今日の詳細
-        let walk = { text: "散歩:今すぐ行けます!", cls: "bg-ok" };
-        const rainNow = data.hourly.precipitation[hr];
-        const rainNext = data.hourly.precipitation[hr+1] || 0;
-        const probNext = data.hourly.precipitation_probability[hr+1] || 0;
+        document.getElementById('c-icon').innerText = weatherIcons[data.current_weather.weathercode]||"☀️";
+        document.getElementById('c-temp').innerText = Math.round(data.current_weather.temperature)+'°';
+        const rangeH = `<span style="color:var(--ng)">${Math.round(data.daily.temperature_2m_max[0])}°</span> / <span style="color:#03a9f4">${Math.round(data.daily.temperature_2m_min[0])}°</span>`;
+        document.getElementById('c-range').innerHTML = rangeH;
+        document.getElementById('badges').innerHTML = `<div class="badge"><span class="dot" style="background:${walk.c}"></span>${walk.t}</div><div class="badge"><span class="dot" style="background:${laundry.c}"></span>${laundry.t}</div><div class="badge"><span class="dot" style="background:#03a9f4"></span>${getFashion(data.current_weather.temperature)}</div>`;
+        
+        const tomCode = data.daily.weathercode[1];
+        document.getElementById('tom-info').innerHTML = `<span style="font-size:1.5rem;">${weatherIcons[tomCode]}</span> <span style="font-weight:700;">${Math.round(data.daily.temperature_2m_max[1])}° / ${Math.round(data.daily.temperature_2m_min[1])}°</span>`;
 
-        if (rainNow > 0) walk = { text: "散歩:NG 雨が降っています", cls: "bg-ng" };
-        else if (rainNext > 0 || probNext > 50) walk = { text: "散歩:× まもなく雨です", cls: "bg-ng" };
-        else if (data.hourly.precipitation_probability[hr] > 25 || probNext > 25) walk = { text: "散歩:注意 急いで短縮を", cls: "bg-warn" };
-
-        let laundry = { text: "洗濯:◎ 外干しOK", cls: "bg-ok" };
-        const maxProb = Math.max(...data.hourly.precipitation_probability.slice(8, 17));
-        if (maxProb > 50) laundry = { text: "洗濯:× 部屋干し推奨", cls: "bg-ng" };
-        else if (maxProb > 25) laundry = { text: "洗濯:△ 空模様に注意", cls: "bg-warn" };
-
-        document.getElementById('current-temp').innerText = Math.round(data.current_weather.temperature) + '°';
-        document.getElementById('current-icon').innerText = weatherIcons[data.current_weather.weathercode] || "☀️";
-        document.getElementById('index-container').innerHTML = `
-            <div class="badge"><span class="dot ${walk.cls}"></span>${walk.text}</div>
-            <div class="badge"><span class="dot ${laundry.cls}"></span>${laundry.text}</div>
-            <div class="badge"><span class="dot" style="background:#03a9f4"></span>👗${getFashion(data.current_weather.temperature)}</div>
-        `;
-
-        // 明日の詳細
-        const tomIcon = weatherIcons[data.daily.weathercode[1]] || "☀️";
-        const tomMax = Math.round(data.daily.temperature_2m_max[1]);
-        const tomMin = Math.round(data.daily.temperature_2m_min[1]);
-        document.getElementById('tomorrow-info').innerHTML = `
-            <span style="font-size:1.8rem;">${tomIcon}</span>
-            <div class="tom-temp">
-                <span style="color:var(--ng)">${tomMax}°</span> / <span style="color:#03a9f4">${tomMin}°</span>
-            </div>
-        `;
-
-        // スクロール予報
-        const hBox = document.getElementById('hourly-list');
-        hBox.innerHTML = '';
-        const todayStr = new Date().toLocaleDateString('sv');
-        const sunsetH = parseInt(data.daily.sunset[0].split('T')[1]);
+        let hH = ''; const sunsetH = parseInt(data.daily.sunset[0].split('T')[1]);
         data.hourly.time.forEach((t, i) => {
             const h = parseInt(t.split('T')[1]);
-            if (t.includes(todayStr) && h >= hr && h <= sunsetH + 1) {
-                hBox.innerHTML += `<div class="hourly-item"><div class="h-time">${h === hr ? '今' : h + '時'}</div><span class="h-icon">${weatherIcons[data.hourly.weathercode[i]]||"☀️"}</span><div class="h-temp">${Math.round(data.hourly.temperature_2m[i])}°</div><div class="h-prob">${data.hourly.precipitation_probability[i]}%</div></div>`;
+            if (t.includes(new Date().toLocaleDateString('sv')) && h >= hr && h <= sunsetH + 1) {
+                hH += `<div class="h-item"><div style="font-size:0.7rem; font-weight:700;">${h==hr?'今':h+'時'}</div><div style="font-size:1.5rem; margin:4px 0;">${weatherIcons[data.hourly.weathercode[i]]||"☀️"}</div><div style="font-weight:700;">${Math.round(data.hourly.temperature_2m[i])}°</div></div>`;
             }
         });
-        document.getElementById('sun-info').innerHTML = `<span>🌅 ${data.daily.sunrise[0].split('T')[1]}</span><span>🌇 ${data.daily.sunset[0].split('T')[1]}</span>`;
+        document.getElementById('h-list').innerHTML = hH;
+        document.getElementById('h-foot').innerHTML = `<span>🌡️ ${rangeH}</span><span>🌅 ${data.daily.sunrise[0].split('T')[1]}</span><span>🌇 ${data.daily.sunset[0].split('T')[1]}</span>`;
 
-        // 週間予報
-        const wBox = document.getElementById('weekly-list');
-        wBox.innerHTML = '';
-        const days = ['日','月','火','水','木','金','土'];
-        for (let i=0; i<7; i++) {
+        let wH = ''; for(let i=0; i<7; i++) {
             const d = new Date(data.daily.time[i]);
-            wBox.innerHTML += `<div class="w-item"><div>${i===0?'今日':days[d.getDay()]}</div><span class="w-icon">${weatherIcons[data.daily.weathercode[i]]}</span><div style="color:var(--ng)">${Math.round(data.daily.temperature_2m_max[i])}°</div><div style="color:#03a9f4">${Math.round(data.daily.temperature_2m_min[i])}°</div></div>`;
+            wH += `<div><div>${i==0?'今日':['日','月','火','水','木','金','土'][d.getDay()]}</div><div style="font-size:1.3rem; margin:4px 0;">${weatherIcons[data.daily.weathercode[i]]}</div><div>${Math.round(data.daily.temperature_2m_max[i])}°</div></div>`;
         }
+        document.getElementById('w-list').innerHTML = wH;
     }
 
-    document.getElementById('daily-quote').innerText = kukaiQuotes[Math.floor(Math.random() * kukaiQuotes.length)];
-    updateClock(); setInterval(updateClock, 60000);
+    updateQuote(); updateTime(); setInterval(updateTime, 60000);
     navigator.geolocation.getCurrentPosition(fetchWeather);
 </script>
 </body>
