@@ -27,26 +27,27 @@
         .card { background: var(--glass-bg); backdrop-filter: blur(8px); border: 2px solid #fff; border-radius: 24px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .section-title { font-size: 0.85rem; font-weight: 900; color: var(--text-sub); margin-bottom: 10px; display: block; }
 
-        /* 今日のあんしん予報：中央揃えレイアウト */
+        /* 今日のあんしん予報 */
         .current-main { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
         .left-weather-stack {
             display: flex; flex-direction: column; align-items: center;
-            min-width: 100px; background: rgba(255,255,255,0.4);
+            min-width: 90px; background: rgba(255,255,255,0.4);
             padding: 8px 4px; border-radius: 16px;
         }
         .weather-top-row { display: flex; align-items: center; gap: 4px; justify-content: center; width: 100%; line-height: 1; }
-        .current-icon-box { font-size: 1.8rem; }
-        .temp-display { font-size: 2.2rem; font-weight: 700; letter-spacing: -1px; }
-        .today-temp-range { font-size: 0.8rem; font-weight: 700; margin-top: 4px; text-align: center; }
+        .current-icon-box { font-size: 1.6rem; }
+        .temp-display { font-size: 1.8rem; font-weight: 700; letter-spacing: -1px; }
+        .today-temp-range { font-size: 0.75rem; font-weight: 700; margin-top: 4px; text-align: center; }
 
         .badges { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
         .badge {
-            font-size: clamp(0.65rem, 3.1vw, 0.85rem); 
-            font-weight: 900; padding: 5px 8px;
-            border-radius: 10px; background: #fff;
+            font-size: 0.75rem; font-weight: 700; padding: 6px 10px;
+            border-radius: 12px; background: #fff;
             display: flex; align-items: center; gap: 6px;
             white-space: nowrap; overflow: hidden;
+            text-overflow: ellipsis;
             border: 1px solid rgba(0,0,0,0.03);
+            width: 100%; box-sizing: border-box;
         }
         .dot { height: 8px; width: 8px; border-radius: 50%; flex-shrink: 0; }
 
@@ -59,17 +60,10 @@
         .hourly-scroll::-webkit-scrollbar { display: none; }
         .h-item { text-align: center; min-width: 45px; }
         .h-icon { font-size: 1.5rem; margin: 4px 0; display: block; }
-
-        .hourly-footer {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-top: 10px; padding-top: 10px;
-            font-size: 0.75rem; font-weight: 700; color: var(--text-sub);
-            border-top: 1px dashed rgba(0,0,0,0.1);
-        }
+        .hourly-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; font-size: 0.75rem; font-weight: 700; color: var(--text-sub); border-top: 1px dashed rgba(0,0,0,0.1); }
 
         .weekly { display: flex; justify-content: space-between; text-align: center; font-size: 0.75rem; font-weight: 700; }
         .w-icon { font-size: 1.3rem; margin: 4px 0; display: block; }
-
         .p-img-card { background: #fff; border-radius: 20px; overflow: hidden; margin-top: 10px; border: 1px solid #eee; }
         .p-img-card img { width: 100%; height: auto; display: block; }
     </style>
@@ -118,20 +112,15 @@
     <section class="card">
         <span class="section-title">ピクミンブルーム 最新情報</span>
         <div class="p-img-card"><div style="font-size:0.75rem; font-weight:900; text-align:center; padding:6px;">今月のお題</div><img src="https://lh3.googleusercontent.com/aOe_CqCJdFevS2otcFy913LHXkdbCpGQ4idw-DZqD6qYClbXBxMydcbSm5NhADdjoUnRu9Hg0hsm3RUgprGpSm6mss9BlI6_16k=e365-pa-nu-w1700"></div>
-        <div class="p-img-card"><div style="font-size:0.75rem; font-weight:900; text-align:center; padding:6px;">ボーナス報酬</div><img src="https://lh3.googleusercontent.com/jaz1ERppQaebuacrS6xyumT_WFuO2fpw20XqgzAlMyxMj5mB6nerpzA3C7nh2xKtZTRGztpar05amhvcMod2RzRVKUUoYGy1UQ=e365-pa-nu-w1700"></div>
     </section>
 </div>
 
 <script>
-    const kukaiQuotes = ["心暗きときは、即ち遭う所ことごとく禍なり。","自心の源をさとるを、さとりという。心に答えがあります。","心を明るくしていれば、どこにいても幸せは見つかります。","ものの興廃は、必ず人に由る。すべてはあなた次第です。","それ、仏法遥かにあらず。心の中にこそ真実がある。","一隅を照らす。あなたらしく輝けばよいのです。","人の一生は、心ひとつの置きどころ。明るい方を向きましょう。","今この瞬間を大切に。一歩ずつ、静かに進んでいきましょう。","願わくは、この功徳を以て、あまねく一切に及ぼし、仏道を成ぜん。"];
+    const kukaiQuotes = ["心暗きときは、即ち遭う所ことごとく禍なり。","自心の源をさとるを、さとりという。","心を明るくしていれば、どこにいても幸せは見つかります。","ものの興廃は、必ず人に由る。すべてはあなた次第です。","一隅を照らす。あなたらしく輝けばよいのです。","人の一生は、心ひとつの置きどころ。"];
     const weatherIcons = {0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌦️",61:"🌧️",63:"🌧️",65:"🌧️",80:"🌦️",81:"🌧️",82:"🌧️",95:"⚡"};
     
     function updateQuote() {
-        let pool = JSON.parse(localStorage.getItem('qp') || "[]");
-        if (pool.length === 0) pool = kukaiQuotes.map((_, i) => i);
-        const idx = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
-        localStorage.setItem('qp', JSON.stringify(pool));
-        document.getElementById('quote').innerText = kukaiQuotes[idx];
+        document.getElementById('quote').innerText = kukaiQuotes[Math.floor(Math.random() * kukaiQuotes.length)];
     }
 
     function updateTime() {
@@ -141,39 +130,39 @@
     }
 
     function getFashion(t) {
-        if(t<5) return "服装：ダウンであったかく"; if(t<10) return "服装：冬コートが必要だよ"; if(t<15) return "服装：厚手のニットが◎"; if(t<20) return "服装：長袖か羽織ものを用意"; if(t<25) return "服装：半袖＋薄手の羽織が◎"; return "服装：半袖1枚で大丈夫";
+        if(t<5) return "服装：冬の重装備で！"; if(t<10) return "服装：コートが必須"; if(t<15) return "服装：厚手のニットを"; if(t<20) return "服装：羽織ものが必要"; if(t<25) return "服装：長袖で快適"; return "服装：半袖でOK";
     }
     
     async function fetchWeather(pos) {
-        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true&hourly=temperature_2m,weathercode,precipitation_probability,precipitation&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=Asia%2FTokyo&models=best_match`);
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true&hourly=temperature_2m,weathercode,precipitation_probability,precipitation&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=Asia%2FTokyo`);
         const data = await res.json();
         const hr = new Date().getHours();
         
-        let walk = data.hourly.precipitation[hr] > 0 ? {t:"散歩：雨が降ってるよ",c:"#FF5252"} : {t:"散歩：今なら大丈夫だよ",c:"#28cd41"};
-        let laundry = Math.max(...data.hourly.precipitation_probability.slice(8,17)) > 40 ? {t:"洗濯：部屋干しが安心だよ",c:"#FF5252"} : {t:"洗濯：外で乾くよ",c:"#28cd41"};
+        let walk = data.hourly.precipitation[hr] > 0 ? {t:"雨：散歩は控えめに",c:"#FF5252"} : {t:"散歩：お出かけ日和",c:"#28cd41"};
+        let laundry = Math.max(...data.hourly.precipitation_probability.slice(8,17)) > 40 ? {t:"洗濯：部屋干し推奨",c:"#FF5252"} : {t:"洗濯：外干しOK",c:"#28cd41"};
 
         document.getElementById('c-icon').innerText = weatherIcons[data.current_weather.weathercode]||"☀️";
         document.getElementById('c-temp').innerText = Math.round(data.current_weather.temperature)+'°';
-        const rangeH = `<span style="color:var(--ng)">${Math.round(data.daily.temperature_2m_max[0])}°</span> / <span style="color:#03a9f4">${Math.round(data.daily.temperature_2m_min[0])}°</span>`;
+        const rangeH = `<span style="color:var(--ng)">${Math.round(data.daily.temperature_2m_max[0])}°</span>/<span style="color:#03a9f4">${Math.round(data.daily.temperature_2m_min[0])}°</span>`;
         document.getElementById('c-range').innerHTML = rangeH;
         document.getElementById('badges').innerHTML = `<div class="badge"><span class="dot" style="background:${walk.c}"></span>${walk.t}</div><div class="badge"><span class="dot" style="background:${laundry.c}"></span>${laundry.t}</div><div class="badge"><span class="dot" style="background:#03a9f4"></span>${getFashion(data.current_weather.temperature)}</div>`;
         
         const tomCode = data.daily.weathercode[1];
-        document.getElementById('tom-info').innerHTML = `<span style="font-size:1.5rem;">${weatherIcons[tomCode]}</span> <span style="font-weight:700;">${Math.round(data.daily.temperature_2m_max[1])}° / ${Math.round(data.daily.temperature_2m_min[1])}°</span>`;
+        document.getElementById('tom-info').innerHTML = `<span style="font-size:1.2rem;">${weatherIcons[tomCode]}</span> <span style="font-weight:700;">${Math.round(data.daily.temperature_2m_max[1])}° / ${Math.round(data.daily.temperature_2m_min[1])}°</span>`;
 
         let hH = ''; const sunsetH = parseInt(data.daily.sunset[0].split('T')[1]);
         data.hourly.time.forEach((t, i) => {
             const h = parseInt(t.split('T')[1]);
             if (t.includes(new Date().toLocaleDateString('sv')) && h >= hr && h <= sunsetH + 1) {
-                hH += `<div class="h-item"><div style="font-size:0.7rem; font-weight:700;">${h==hr?'今':h+'時'}</div><div style="font-size:1.5rem; margin:4px 0;">${weatherIcons[data.hourly.weathercode[i]]||"☀️"}</div><div style="font-weight:700;">${Math.round(data.hourly.temperature_2m[i])}°</div></div>`;
+                hH += `<div class="h-item"><div style="font-size:0.7rem;">${h==hr?'今':h+'時'}</div><div style="font-size:1.3rem;">${weatherIcons[data.hourly.weathercode[i]]||"☀️"}</div><div style="font-weight:700;">${Math.round(data.hourly.temperature_2m[i])}°</div></div>`;
             }
         });
         document.getElementById('h-list').innerHTML = hH;
-        document.getElementById('h-foot').innerHTML = `<span>🌡️ ${rangeH}</span><span>🌅 ${data.daily.sunrise[0].split('T')[1]}</span><span>🌇 ${data.daily.sunset[0].split('T')[1]}</span>`;
+        document.getElementById('h-foot').innerHTML = `<span>🌡️${rangeH}</span><span>🌅${data.daily.sunrise[0].split('T')[1]}</span><span>🌇${data.daily.sunset[0].split('T')[1]}</span>`;
 
-        let wH = ''; for(let i=0; i<7; i++) {
+        let wH = ''; for(let i=0; i<5; i++) {
             const d = new Date(data.daily.time[i]);
-            wH += `<div><div>${i==0?'今日':['日','月','火','水','木','金','土'][d.getDay()]}</div><div style="font-size:1.3rem; margin:4px 0;">${weatherIcons[data.daily.weathercode[i]]}</div><div>${Math.round(data.daily.temperature_2m_max[i])}°</div></div>`;
+            wH += `<div><div>${i==0?'今日':['日','月','火','水','木','金','土'][d.getDay()]}</div><div class="w-icon">${weatherIcons[data.daily.weathercode[i]]}</div><div>${Math.round(data.daily.temperature_2m_max[i])}°</div></div>`;
         }
         document.getElementById('w-list').innerHTML = wH;
     }
