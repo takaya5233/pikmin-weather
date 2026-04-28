@@ -14,12 +14,12 @@
         }
         body { margin: 0; padding: 0; font-family: 'Zen Maru Gothic', sans-serif; background: var(--bg-gradient); display: flex; justify-content: center; color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
         .phone-canvas { width: 100%; max-width: 430px; display: flex; flex-direction: column; gap: 10px; padding: 15px 12px 60px; box-sizing: border-box; }
-        
+
         /* コンテンツ */
         #dt { text-align: center; margin: 15px 0 5px; }
         #time { font-size: 4.5rem; font-weight: 900; margin: -5px 0; letter-spacing: -2px; }
         #date { font-size: 1.2rem; font-weight: 700; color: var(--text-sub); }
-        
+
         .quote-c { margin: 10px 5px; background: #fff; padding: 15px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .quote-text { font-size: 0.9rem; font-weight: 700; line-height: 1.6; }
         .quote-author { font-size: 0.7rem; color: var(--text-sub); text-align: right; display: block; margin-top: 6px; }
@@ -41,7 +41,7 @@
 
         .badges { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
         .badge {
-            font-size: clamp(0.65rem, 3.1vw, 0.85rem); 
+            font-size: clamp(0.65rem, 3.1vw, 0.85rem);
             font-weight: 900; padding: 5px 8px;
             border-radius: 10px; background: #fff;
             display: flex; align-items: center; gap: 6px;
@@ -115,17 +115,17 @@
         <div id="w-list" class="weekly"></div>
     </section>
 
+    <!-- ピクミンセクション：中身はJSで自動切替 -->
     <section class="card">
-        <span class="section-title">ピクミンブルーム 最新情報</span>
-        <div class="p-img-card"><div style="font-size:0.75rem; font-weight:900; text-align:center; padding:6px;">今月のお題</div><img src="https://lh3.googleusercontent.com/aOe_CqCJdFevS2otcFy913LHXkdbCpGQ4idw-DZqD6qYClbXBxMydcbSm5NhADdjoUnRu9Hg0hsm3RUgprGpSm6mss9BlI6_16k=e365-pa-nu-w1700"></div>
-        <div class="p-img-card"><div style="font-size:0.75rem; font-weight:900; text-align:center; padding:6px;">ボーナス報酬</div><img src="https://lh3.googleusercontent.com/jaz1ERppQaebuacrS6xyumT_WFuO2fpw20XqgzAlMyxMj5mB6nerpzA3C7nh2xKtZTRGztpar05amhvcMod2RzRVKUUoYGy1UQ=e365-pa-nu-w1700"></div>
+        <span class="section-title" id="pikmin-title">ピクミンブルーム 最新情報</span>
+        <div id="pikmin-content"></div>
     </section>
 </div>
 
 <script>
     const kukaiQuotes = ["心暗きときは、即ち遭う所ことごとく禍なり。","自心の源をさとるを、さとりという。心に答えがあります。","心を明るくしていれば、どこにいても幸せは見つかります。","ものの興廃は、必ず人に由る。すべてはあなた次第です。","それ、仏法遥かにあらず。心の中にこそ真実がある。","一隅を照らす。あなたらしく輝けばよいのです。","人の一生は、心ひとつの置きどころ。明るい方を向きましょう。","今この瞬間を大切に。一歩ずつ、静かに進んでいきましょう。","願わくは、この功徳を以て、あまねく一切に及ぼし、仏道を成ぜん。"];
     const weatherIcons = {0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌦️",61:"🌧️",63:"🌧️",65:"🌧️",80:"🌦️",81:"🌧️",82:"🌧️",95:"⚡"};
-    
+
     function updateQuote() {
         let pool = JSON.parse(localStorage.getItem('qp') || "[]");
         if (pool.length === 0) pool = kukaiQuotes.map((_, i) => i);
@@ -143,12 +143,12 @@
     function getFashion(t) {
         if(t<5) return "服装：ダウンであったかく"; if(t<10) return "服装：冬コートが必要だよ"; if(t<15) return "服装：厚手のニットが◎"; if(t<20) return "服装：長袖か羽織ものを用意"; if(t<25) return "服装：半袖＋薄手の羽織が◎"; return "服装：半袖1枚で大丈夫";
     }
-    
+
     async function fetchWeather(pos) {
         const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true&hourly=temperature_2m,weathercode,precipitation_probability,precipitation&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=Asia%2FTokyo&models=best_match`);
         const data = await res.json();
         const hr = new Date().getHours();
-        
+
         let walk = data.hourly.precipitation[hr] > 0 ? {t:"散歩：雨が降ってるよ",c:"#FF5252"} : {t:"散歩：今なら大丈夫だよ",c:"#28cd41"};
         let laundry = Math.max(...data.hourly.precipitation_probability.slice(8,17)) > 40 ? {t:"洗濯：部屋干しが安心だよ",c:"#FF5252"} : {t:"洗濯：外で乾くよ",c:"#28cd41"};
 
@@ -157,7 +157,7 @@
         const rangeH = `<span style="color:var(--ng)">${Math.round(data.daily.temperature_2m_max[0])}°</span> / <span style="color:#03a9f4">${Math.round(data.daily.temperature_2m_min[0])}°</span>`;
         document.getElementById('c-range').innerHTML = rangeH;
         document.getElementById('badges').innerHTML = `<div class="badge"><span class="dot" style="background:${walk.c}"></span>${walk.t}</div><div class="badge"><span class="dot" style="background:${laundry.c}"></span>${laundry.t}</div><div class="badge"><span class="dot" style="background:#03a9f4"></span>${getFashion(data.current_weather.temperature)}</div>`;
-        
+
         const tomCode = data.daily.weathercode[1];
         document.getElementById('tom-info').innerHTML = `<span style="font-size:1.5rem;">${weatherIcons[tomCode]}</span> <span style="font-weight:700;">${Math.round(data.daily.temperature_2m_max[1])}° / ${Math.round(data.daily.temperature_2m_min[1])}°</span>`;
 
@@ -180,6 +180,56 @@
 
     updateQuote(); updateTime(); setInterval(updateTime, 60000);
     navigator.geolocation.getCurrentPosition(fetchWeather);
+
+    // ══════════════════════════════════════════════════
+    //  ピクミンブルーム 月別データ設定
+    //  毎月1日頃に新しいエントリを追加するだけでOK
+    // ══════════════════════════════════════════════════
+    const PIKMIN_MONTHLY = {
+        "2026-04": {
+            eventName: "チューリップ・フェスティバル",
+            cards: [
+                { label: "今月のお題",  url: "https://lh3.googleusercontent.com/aOe_CqCJdFevS2otcFy913LHXkdbCpGQ4idw-DZqD6qYClbXBxMydcbSm5NhADdjoUnRu9Hg0hsm3RUgprGpSm6mss9BlI6_16k=e365-pa-nu-w1700" },
+                { label: "ボーナス報酬", url: "https://lh3.googleusercontent.com/jaz1ERppQaebuacrS6xyumT_WFuO2fpw20XqgzAlMyxMj5mB6nerpzA3C7nh2xKtZTRGztpar05amhvcMod2RzRVKUUoYGy1UQ=e365-pa-nu-w1700" }
+            ]
+        },
+        "2026-05": {
+            eventName: "5月のイベント名",
+            cards: [
+                { label: "今月のお題",  url: "" },
+                { label: "ボーナス報酬", url: "https://lh3.googleusercontent.com/hJnceMAaxtWGJnBtrntbLOvSCRmSj3-iIPfu3VRRxq-e1Z9vD7rA8E-xuoQTL6xVQNtrV0g8IpaSrUGjMKf6ewc-6M6pBVUPbIg=e365-pa-nu-w850" }
+            ]
+        },
+        // ↓ 毎月ここにコピーして追加する
+        // "2026-06": {
+        //     eventName: "6月のイベント名",
+        //     cards: [
+        //         { label: "今月のお題",  url: "画像URLをここに貼る" },
+        //         { label: "ボーナス報酬", url: "画像URLをここに貼る" }
+        //     ]
+        // },
+    };
+
+    function renderPikmin() {
+        const now = new Date();
+        const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const d = PIKMIN_MONTHLY[key];
+        const content = document.getElementById('pikmin-content');
+        const title = document.getElementById('pikmin-title');
+
+        if (!d) {
+            content.innerHTML = `<div style="text-align:center; padding:20px; color:#bbb; font-size:0.8rem;">📋 ${now.getMonth()+1}月のデータは未登録です<br><span style="font-size:0.7rem;">PIKMIN_MONTHLY に追加してください</span></div>`;
+            return;
+        }
+
+        title.textContent = `🌿 ${d.eventName}`;
+        content.innerHTML = d.cards
+            .filter(c => c.url)
+            .map(c => `<div class="p-img-card"><div style="font-size:0.75rem; font-weight:900; text-align:center; padding:6px;">${c.label}</div><img src="${c.url}" alt="${c.label}" onerror="this.style.display='none'"></div>`)
+            .join('');
+    }
+
+    renderPikmin();
 </script>
 </body>
 </html>
