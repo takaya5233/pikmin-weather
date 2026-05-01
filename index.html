@@ -15,10 +15,12 @@
         body { margin: 0; padding: 0; font-family: 'Zen Maru Gothic', sans-serif; background: var(--bg-gradient); display: flex; justify-content: center; color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
         .phone-canvas { width: 100%; max-width: 430px; display: flex; flex-direction: column; gap: 10px; padding: 15px 12px 60px; box-sizing: border-box; }
 
-        /* コンテンツ */
+        /* ヘッダーと画像 */
         #dt { text-align: center; margin: 15px 0 5px; }
         #time { font-size: 4.5rem; font-weight: 900; margin: -5px 0; letter-spacing: -2px; }
         #date { font-size: 1.2rem; font-weight: 700; color: var(--text-sub); }
+        .header-image { margin: 10px auto 15px; display: flex; justify-content: center; }
+        .header-image img { width: 100%; max-width: 380px; height: auto; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
         .quote-c { margin: 10px 5px; background: #fff; padding: 15px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .quote-text { font-size: 0.9rem; font-weight: 700; line-height: 1.6; }
@@ -27,49 +29,26 @@
         .card { background: var(--glass-bg); backdrop-filter: blur(8px); border: 2px solid #fff; border-radius: 24px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .section-title { font-size: 0.85rem; font-weight: 900; color: var(--text-sub); margin-bottom: 10px; display: block; }
 
-        /* 今日のあんしん予報：中央揃えレイアウト */
         .current-main { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
-        .left-weather-stack {
-            display: flex; flex-direction: column; align-items: center;
-            min-width: 80px; background: rgba(255,255,255,0.4);
-            padding: 6px 4px; border-radius: 16px;
-        }
+        .left-weather-stack { display: flex; flex-direction: column; align-items: center; min-width: 80px; background: rgba(255,255,255,0.4); padding: 6px 4px; border-radius: 16px; }
         .weather-top-row { display: flex; align-items: center; gap: 2px; justify-content: center; width: 100%; line-height: 1; }
         .current-icon-box { font-size: 1.5rem; }
         .temp-display { font-size: 1.9rem; font-weight: 700; letter-spacing: -1px; }
         .today-temp-range { font-size: 0.75rem; font-weight: 700; margin-top: 4px; text-align: center; }
 
         .badges { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
-        .badge {
-            font-size: clamp(0.6rem, 2.9vw, 0.8rem);
-            font-weight: 900; padding: 5px 7px;
-            border-radius: 10px; background: #fff;
-            display: flex; align-items: center; gap: 5px;
-            word-break: break-all;
-            border: 1px solid rgba(0,0,0,0.03);
-        }
+        .badge { font-size: clamp(0.6rem, 2.9vw, 0.8rem); font-weight: 900; padding: 5px 7px; border-radius: 10px; background: #fff; display: flex; align-items: center; gap: 5px; word-break: break-all; border: 1px solid rgba(0,0,0,0.03); }
         .dot { height: 8px; width: 8px; border-radius: 50%; flex-shrink: 0; }
 
         .tomorrow-box { border-top: 1px dashed rgba(0,0,0,0.1); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
         .tomorrow-label { font-size: 0.8rem; font-weight: 900; color: var(--text-sub); }
-        .tom-temp { font-size: 1rem; font-weight: 700; }
 
-        /* 予報スクロール */
         .hourly-scroll { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 10px; }
         .hourly-scroll::-webkit-scrollbar { display: none; }
         .h-item { text-align: center; min-width: 45px; }
-        .h-icon { font-size: 1.5rem; margin: 4px 0; display: block; }
 
-        .hourly-footer {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-top: 10px; padding-top: 10px;
-            font-size: 0.75rem; font-weight: 700; color: var(--text-sub);
-            border-top: 1px dashed rgba(0,0,0,0.1);
-        }
-
+        .hourly-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; font-size: 0.75rem; font-weight: 700; color: var(--text-sub); border-top: 1px dashed rgba(0,0,0,0.1); }
         .weekly { display: flex; justify-content: space-between; text-align: center; font-size: 0.75rem; font-weight: 700; }
-        .w-icon { font-size: 1.3rem; margin: 4px 0; display: block; }
-
         .p-img-card { background: #fff; border-radius: 20px; overflow: hidden; margin-top: 10px; border: 1px solid #eee; }
         .p-img-card img { width: 100%; height: auto; display: block; }
     </style>
@@ -79,6 +58,9 @@
     <header id="dt">
         <div id="date">...</div>
         <div id="time">00:00</div>
+        <div class="header-image">
+            <img src="https://github.com/takaya5233/pikmin-weather/blob/main/pikmin.png?raw=true" alt="Pikmin">
+        </div>
     </header>
 
     <div class="quote-c">
@@ -122,9 +104,7 @@
 </div>
 
 <script>
-    const kukaiQuotes = [
-        "心暗きときは、即ち遭う所ことごとく禍なり。","自心の源をさとるを、さとりという。心に答えがあります。","心を明るくしていれば、どこにいても幸せは見つかります。","ものの興廃は、必ず人に由る。すべてはあなた次第です。","それ、仏法遥かにあらず。心の中にこそ真実がある。","一隅を照らす。あなたらしく輝けばよいのです。","人の一生は、心ひとつの置きどころ。明るい方を向きましょう。","今この瞬間を大切に。一歩ずつ、静かに進んでいきましょう。","願わくは、この功徳を以て、あまねく一切に及ぼし、仏道を成ぜん。","虚空尽き、衆生尽き、涅槃尽きなば、我が願いも尽きなむ。","自身の宝、磨かなければ光りません。日々の歩みを大切に。","悟りとは、外にあるものではなく、自分の中に眠る宝物です。","あなたの笑顔が、誰かの心を照らす光になります。","無理をせず、しかし怠らず。中道の心がけが大切です。","水は方円の器に従う。柔軟な心で今日を過ごしましょう。","困難はあなたを育てる糧。恐れずに向き合えば道は開けます。","静かな心で耳を澄ませば、宇宙の真理が聞こえてきます。","言葉は心を表す鏡。優しく温かな言葉を選びましょう。","自分を信じる力。それがすべての始まりです。","他人の幸せを願う心が、あなた自身の幸せを呼び込みます。","今日という日は二度と来ない。一分一秒を慈しみましょう。","心の中の雑草を抜き、美しい花の種を蒔きましょう。","知識は実践してこそ知恵となる。まずは動いてみることです。","風のように軽やかに、山のようにどっしりと構えましょう。","過去に囚われず、未来を憂えず。ただ「今」を懸命に。","感謝の心は、人生を豊かにする魔法の鍵です。","どんなに遠い道のりも、最初の一歩から始まります。","あなたの内側にある太陽を、曇らせてはいけません。","器を大きくすれば、受け取れる幸せも大きくなります。","自分を許すことができれば、他人も許せるようになります。","答えを急がない。熟した果実が落ちるのを待つように。","心の洗濯をしましょう。深呼吸をして、新しい空気を。","誠実な歩みは、必ず誰かが見ていてくれます。","自分を飾る必要はありません。ありのままが一番尊い。","欲望に振り回されず、足るを知る心が安らぎを生みます。","一滴の水が集まって海になる。小さな善行を積み重ねて。","怒りは自分を傷つける毒。穏やかな川の流れをイメージして。","迷いがあるのは成長している証。自信を持って進みなさい。","人生は一冊の本。あなたが素晴らしい物語を書きましょう。","孤独は自分を見つめる時間。寂しさを強さに変えて。","心に余裕を持てば、景色はもっと違って見えます。","失敗は成功への地図。間違えた場所を覚えればよいのです。","他人の物差しで自分を測らない。あなたはあなたのままで。","愛の心は、氷をも溶かす力を持っています。","どんな嵐の後にも、必ず晴天がやってきます。","学び続ける心は、あなたをいつまでも若々しく保ちます。","謙虚さは最大の防御であり、最大の魅力でもあります。","あなたの存在そのものが、世界への贈り物です。","今あるものに目を向ければ、世界は恵みに溢れています。","集中する時間は、心を研ぎ澄ます儀式です。","自分を大切にできない人は、他人も大切にできません。","人生の正解は一つではない。あなたなりの正解を。","一期一会。出会うすべての人を大切にしましょう。","夢を描く力。それが未来を創るエネルギーです。","立ち止まってもいい。景色を楽しむ余裕を持ちましょう。","信念は、暗闇を照らす松明のようなものです。","心に潤いを。美しいものに触れる時間を作りましょう。","焦りは禁物。種を蒔いてすぐには花は咲きません。","自分の弱さを認めることが、本当の強さへの第一歩。","言葉にできない想いも、宇宙はすべて受け止めてくれます。","日常の当たり前の中に、奇跡は隠れています。","比べるべきは他人ではなく、昨日の自分です。","道に迷ったら、一番ワクワクする方を選んでみて。","あなたは一人ではありません。目に見えない繋がりを信じて。","心の鏡を磨き、真実を映し出しましょう。","優しさは、巡り巡って必ずあなたに帰ってきます。","変化を恐れず、新しい風を自分に取り込みましょう。","自分を褒めてあげてください。今日まで頑張ってきたことを。","どんな時も、心に一輪の花を絶やさないように。","目的地を忘れなければ、遠回りもまた楽し。","あなたの言葉が、誰かの背中を押す力になります。","静寂の中にこそ、本当の答えが眠っています。","自分の人生の主人公は、他の誰でもないあなたです。","小さな喜びを見つける天才になりましょう。","限界を決めているのは、いつだって自分自身です。","心を開けば、新しい世界があなたを歓迎してくれます。","挑戦することに遅すぎることはありません。","あなたの手は、誰かを助け、何かを創るためにあります。","直感は魂からのメッセージ。大切にしてください。","誠実さは、最も確かな信頼の礎となります。","雨の日は雨を楽しみ、晴れの日は晴れを喜ぶ。","自分の中に流れる生命の力を感じてみてください。","可能性は無限大。自ら枠を作らないように。","微笑みは、言葉を超えたコミュニケーションです。","何事も面白がること。それが人生を輝かせるコツです。","心に響く言葉を、お守りのように持ち歩きましょう。","あなたの光を誰にも消させてはいけません。","人生は修行ではなく、楽しむためのステージです。","感謝の言葉を口に出すたび、幸福が近づきます。","整理整頓は心の整理。身の回りを清めましょう。","与えることは、受け取ること以上に心を満たします。","あなたの情熱が、凍てついた心を動かします。","休むこともまた、大切な仕事の一部です。","素直な心は、すべての扉を開けるパスワード。","毎日が新しい誕生日。新しい自分を始めましょう。","自分らしく生きることが、最大の社会貢献です。","空を見上げる余裕を。心はいつも広くありたい。","宇宙は常にあなたを応援しています。","最後は必ずうまくいきます。そうでなければ最後ではない。","一歩ずつ、淡々と。それが最も遠くまで行く方法です。","今日も良い一日になります。心からそう信じて。","阿字の子が阿字のふるさと立ち出でて また阿字のふるさとへ帰る。","生れ生れ生れ生れて生のおわりに暗く 死に死に死に死んで死の始めに冥し。"
-    ];
+    const kukaiQuotes = ["心暗きときは、即ち遭う所ことごとく禍なり。","自心の源をさとるを、さとりという。心に答えがあります。","心を明るくしていれば、どこにいても幸せは見つかります。","ものの興廃は、必ず人に由る。すべてはあなた次第です。","それ、仏法遥かにあらず。心の中にこそ真実がある。","一隅を照らす。あなたらしく輝けばよいのです。","人の一生は、心ひとつの置きどころ。明るい方を向きましょう。","今この瞬間を大切に。一歩ずつ、静かに進んでいきましょう。","願わくは、この功徳を以て、あまねく一切に及ぼし、仏道を成ぜん。","虚空尽き、衆生尽き、涅槃尽きなば、我が願いも尽きなむ。","自身の宝、磨かなければ光りません。日々の歩みを大切に。","悟りとは、外にあるものではなく、自分の中に眠る宝物です。","あなたの笑顔が、誰かの心を照らす光になります。","無理をせず、しかし怠らず。中道の心がけが大切です。","水は方円の器に従う。柔軟な心で今日を過ごしましょう。","困難はあなたを育てる糧。恐れずに向き合えば道は開けます。","静かな心で耳を澄ませば、宇宙の真理が聞こえてきます。","言葉は心を表す鏡。優しく温かな言葉を選びましょう。","自分を信じる力。それがすべての始まりです。","他人の幸せを願う心が、あなた自身の幸せを呼び込みます。","今日という日は二度と来ない。一分一秒を慈しみましょう。","心の中の雑草を抜き、美しい花の種を蒔きましょう。","知識は実践してこそ知恵となる。まずは動いてみることです。","風のように軽やかに、山のようにどっしりと構えましょう。","過去に囚われず、未来を憂えず。ただ「今」を懸命に。","感謝の心は、人生を豊かにする魔法の鍵です。","どんなに遠い道のりも、最初の一歩から始まります。","あなたの内側にある太陽を、曇らせてはいけません。","器を大きくすれば、受け取れる幸せも大きくなります。","自分を許すことができれば、他人も許せるようになります。","答えを急がない。熟した果実が落ちるのを待つように。","心の洗濯をしましょう。深呼吸をして、新しい空気を。","誠実な歩みは、必ず誰かが見ていてくれます。","自分を飾る必要はありません。ありのままが一番尊い。","欲望に振り回されず、足るを知る心が安らぎを生みます。","一滴の水が集まって海になる。小さな善行を積み重ねて。","怒りは自分を傷つける毒。穏やかな川の流れをイメージして。","迷いがあるのは成長している証。自信を持って進みなさい。","人生は一冊の本。あなたが素晴らしい物語を書きましょう。","孤独は自分を見つめる時間。寂しさを強さに変えて。","心に余裕を持てば、景色はもっと違って見えます。","失敗は成功への地図。間違えた場所を覚えればよいのです。","他人の物差しで自分を測らない。あなたはあなたのままで。","愛の心は、氷をも溶かす力を持っています。","どんな嵐の後にも、必ず晴天がやってきます。","学び続ける心は、あなたをいつまでも若々しく保ちます。","謙虚さは最大の防御であり、最大の魅力でもあります。","あなたの存在そのものが、世界への贈り物です。","今あるものに目を向ければ、世界は恵みに溢れています。","集中する時間は、心を研ぎ澄ます儀式です。","自分を大切にできない人は、他人も大切にできません。","人生の正解は一つではない。あなたなりの正解を。","一期一会。出会うすべての人を大切にしましょう。","夢を描く力。それが未来を創るエネルギーです。","立ち止まってもいい。景色を楽しむ余裕を持ちましょう。","信念は、暗闇を照らす松明のようなものです。","心に潤いを。美しいものに触れる時間を作りましょう。","焦りは禁物。種を蒔いてすぐには花は咲きません。","自分の弱さを認めることが、本当の強さへの第一歩。","言葉にできない想いも、宇宙はすべて受け止めてくれます。","日常の当たり前の中に、奇跡は隠れています。","比べるべきは他人ではなく、昨日の自分です。","道に迷ったら、一番ワクワクする方を選んでみて。","あなたは一人ではありません。目に見えない繋がりを信じて。","心の鏡を磨き、真実を映し出しましょう。","優しさは、巡り巡って必ずあなたに帰ってきます。","変化を恐れず、新しい風を自分に取り込みましょう。","自分を褒めてあげてください。今日まで頑張ってきたことを。","どんな時も、心に一輪の花を絶やさないように。","目的地を忘れなければ、遠回りもまた楽し。","あなたの言葉が、誰かの背中を押す力になります。","静寂の中にこそ、本当の答えが眠っています。","自分の人生の主人公は、他の誰でもないあなたです。","小さな喜びを見つける天才になりましょう。","限界を決めているのは、いつだって自分自身です。","心を開けば、新しい世界があなたを歓迎してくれます。","挑戦することに遅すぎることはありません。","あなたの手は、誰かを助け、何かを創るためにあります。","直感は魂からのメッセージ。大切にしてください。","誠実さは、最も確かな信頼の礎となります。","雨の日は雨を楽しみ、晴れの日は晴れを喜ぶ。","自分の中に流れる生命の力を感じてみてください。","可能性は無限大。自ら枠を作らないように。","微笑みは、言葉を超えたコミュニケーションです。","何事も面白がること。それが人生を輝かせるコツです。","心に響く言葉を、お守りのように持ち歩きましょう。","あなたの光を誰にも消させてはいけません。","人生は修行ではなく、楽しむためのステージです。","感謝の言葉を口に出すたび、幸福が近づきます。","整理整頓は心の整理。身の回りを清めましょう。","与えることは、受け取ること以上に心を満たします。","あなたの情熱が、凍てついた心を動かします。","休むこともまた、大切な仕事の一部です。","素直な心は、すべての扉を開けるパスワード。","毎日が新しい誕生日。新しい自分を始めましょう。","自分らしく生きることが、最大の社会貢献です。","空を見上げる余裕を。心はいつも広くありたい。","宇宙は常にあなたを応援しています。","最後は必ずうまくいきます。そうでなければ最後ではない。","一歩ずつ、淡々と。それが最も遠くまで行く方法です。","今日も良い一日になります。心からそう信じて。","阿字の子が阿字のふるさと立ち出でて また阿字のふるさとへ帰る。","生れ生れ生れ生れて生のおわりに暗く 死に死に死に死んで死の始めに冥し。"];
     const weatherIcons = {0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌦️",61:"🌧️",63:"🌧️",65:"🌧️",80:"🌦️",81:"🌧️",82:"🌧️",95:"⚡"};
 
     function updateQuote() {
@@ -149,19 +129,15 @@
         const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true&hourly=temperature_2m,weathercode,precipitation_probability,precipitation&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=Asia%2FTokyo&models=best_match`);
         const data = await res.json();
         const hr = new Date().getHours();
-
         let walk = data.hourly.precipitation[hr] > 0 ? {t:"散歩：雨が降ってるよ",c:"#FF5252"} : {t:"散歩：今なら大丈夫だよ",c:"#28cd41"};
         let laundry = Math.max(...data.hourly.precipitation_probability.slice(8,17)) > 40 ? {t:"洗濯：部屋干しが安心だよ",c:"#FF5252"} : {t:"洗濯：外で乾くよ",c:"#28cd41"};
-
         document.getElementById('c-icon').innerText = weatherIcons[data.current_weather.weathercode]||"☀️";
         document.getElementById('c-temp').innerText = Math.round(data.current_weather.temperature)+'°';
         const rangeH = `<span style="color:var(--ng)">${Math.round(data.daily.temperature_2m_max[0])}°</span> / <span style="color:#03a9f4">${Math.round(data.daily.temperature_2m_min[0])}°</span>`;
         document.getElementById('c-range').innerHTML = rangeH;
         document.getElementById('badges').innerHTML = `<div class="badge"><span class="dot" style="background:${walk.c}"></span>${walk.t}</div><div class="badge"><span class="dot" style="background:${laundry.c}"></span>${laundry.t}</div><div class="badge"><span class="dot" style="background:#03a9f4"></span>${getFashion(data.current_weather.temperature)}</div>`;
-
         const tomCode = data.daily.weathercode[1];
         document.getElementById('tom-info').innerHTML = `<span style="font-size:1.5rem;">${weatherIcons[tomCode]}</span> <span style="font-weight:700;">${Math.round(data.daily.temperature_2m_max[1])}° / ${Math.round(data.daily.temperature_2m_min[1])}°</span>`;
-
         let hH = ''; const sunsetH = parseInt(data.daily.sunset[0].split('T')[1]);
         data.hourly.time.forEach((t, i) => {
             const h = parseInt(t.split('T')[1]);
@@ -171,7 +147,6 @@
         });
         document.getElementById('h-list').innerHTML = hH;
         document.getElementById('h-foot').innerHTML = `<span>🌡️ ${rangeH}</span><span>🌅 ${data.daily.sunrise[0].split('T')[1]}</span><span>🌇 ${data.daily.sunset[0].split('T')[1]}</span>`;
-
         let wH = ''; for(let i=0; i<7; i++) {
             const d = new Date(data.daily.time[i]);
             wH += `<div><div>${i==0?'今日':['日','月','火','水','木','金','土'][d.getDay()]}</div><div style="font-size:1.3rem; margin:4px 0;">${weatherIcons[data.daily.weathercode[i]]}</div><div>${Math.round(data.daily.temperature_2m_max[i])}°</div></div>`;
@@ -182,24 +157,9 @@
     updateQuote(); updateTime(); setInterval(updateTime, 60000);
     navigator.geolocation.getCurrentPosition(fetchWeather);
 
-    // ══════════════════════════════════════════════════
-    //  ピクミンブルーム 月別データ設定
-    // ══════════════════════════════════════════════════
     const PIKMIN_MONTHLY = {
-        "2026-04": {
-            eventName: "チューリップ・フェスティバル",
-            cards: [
-                { label: "今月のお題",  url: "https://lh3.googleusercontent.com/aOe_CqCJdFevS2otcFy913LHXkdbCpGQ4idw-DZqD6qYClbXBxMydcbSm5NhADdjoUnRu9Hg0hsm3RUgprGpSm6mss9BlI6_16k=e365-pa-nu-w1700" },
-                { label: "ボーナス報酬", url: "https://lh3.googleusercontent.com/jaz1ERppQaebuacrS6xyumT_WFuO2fpw20XqgzAlMyxMj5mB6nerpzA3C7nh2xKtZTRGztpar05amhvcMod2RzRVKUUoYGy1UQ=e365-pa-nu-w1700" }
-            ]
-        },
-        "2026-05": {
-            eventName: "5月のイベント名",
-            cards: [
-                { label: "今月のお題",  url: "https://lh3.googleusercontent.com/afHeTXZAZ0spg_McMmGWEyqVzgvsAVU2Xx5eCn6K1p1fvkOAKQuBZEcVM13ClEVcXfRS7EBovmEdE8C-mxLNhqy2IXSOwSTtt8ow=e365-pa-nu-w850" },
-                { label: "ボーナス報酬", url: "https://lh3.googleusercontent.com/hJnceMAaxtWGJnBtrntbLOvSCRmSj3-iIPfu3VRRxq-e1Z9vD7rA8E-xuoQTL6xVQNtrV0g8IpaSrUGjMKf6ewc-6M6pBVUPbIg=e365-pa-nu-w850" }
-            ]
-        }
+        "2026-04": { eventName: "チューリップ・フェスティバル", cards: [ { label: "今月のお題", url: "https://lh3.googleusercontent.com/aOe_CqCJdFevS2otcFy913LHXkdbCpGQ4idw-DZqD6qYClbXBxMydcbSm5NhADdjoUnRu9Hg0hsm3RUgprGpSm6mss9BlI6_16k=e365-pa-nu-w1700" }, { label: "ボーナス報酬", url: "https://lh3.googleusercontent.com/jaz1ERppQaebuacrS6xyumT_WFuO2fpw20XqgzAlMyxMj5mB6nerpzA3C7nh2xKtZTRGztpar05amhvcMod2RzRVKUUoYGy1UQ=e365-pa-nu-w1700" } ] },
+        "2026-05": { eventName: "5月のイベント名", cards: [ { label: "今月のお題", url: "https://lh3.googleusercontent.com/afHeTXZAZ0spg_McMmGWEyqVzgvsAVU2Xx5eCn6K1p1fvkOAKQuBZEcVM13ClEVcXfRS7EBovmEdE8C-mxLNhqy2IXSOwSTtt8ow=e365-pa-nu-w850" }, { label: "ボーナス報酬", url: "https://lh3.googleusercontent.com/hJnceMAaxtWGJnBtrntbLOvSCRmSj3-iIPfu3VRRxq-e1Z9vD7rA8E-xuoQTL6xVQNtrV0g8IpaSrUGjMKf6ewc-6M6pBVUPbIg=e365-pa-nu-w850" } ] }
     };
 
     function renderPikmin() {
@@ -208,19 +168,10 @@
         const d = PIKMIN_MONTHLY[key];
         const content = document.getElementById('pikmin-content');
         const title = document.getElementById('pikmin-title');
-
-        if (!d) {
-            content.innerHTML = `<div style="text-align:center; padding:20px; color:#bbb; font-size:0.8rem;">📋 ${now.getMonth()+1}月のデータは未登録です<br><span style="font-size:0.7rem;">PIKMIN_MONTHLY に追加してください</span></div>`;
-            return;
-        }
-
+        if (!d) { content.innerHTML = `<div style="text-align:center; padding:20px; color:#bbb; font-size:0.8rem;">📋 ${now.getMonth()+1}月のデータは未登録です</div>`; return; }
         title.textContent = `🌿 ${d.eventName}`;
-        content.innerHTML = d.cards
-            .filter(c => c.url)
-            .map(c => `<div class="p-img-card"><div style="font-size:0.75rem; font-weight:900; text-align:center; padding:6px;">${c.label}</div><img src="${c.url}" alt="${c.label}" onerror="this.style.display='none'"></div>`)
-            .join('');
+        content.innerHTML = d.cards.filter(c => c.url).map(c => `<div class="p-img-card"><div style="font-size:0.75rem; font-weight:900; text-align:center; padding:6px;">${c.label}</div><img src="${c.url}" alt="${c.label}"></div>`).join('');
     }
-
     renderPikmin();
 </script>
 </body>
