@@ -212,50 +212,151 @@
     }
 
     /**
-     * 【強化版】サッカー順位取得ロジック
+     * 【高速版】サッカー順位取得ロジック
+     * - 前回取得済みの順位をlocalStorageから即表示
+     * - 複数プロキシを同時に走らせ、最初に成功したものを採用
+     * - 遅い通信は短時間で打ち切り、画面を待たせない
      */
     async function updateSoccerRank() {
         const rankValueEl = document.getElementById('rank-value');
         const targetUrl = 'https://koko-soccer.com/score/4345';
-        // 複数のプロキシ候補を使い分けられるように構成
-        const proxies = [
-            url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&_=${Date.now()}`,
-            url => `https://corsproxy.io/?${encodeURIComponent(url)}`
-        ];
-        
-        // とりあえず1つ目のプロキシで実行
-        try {
-            const res = await fetch(proxies[0](targetUrl));
-            if (!res.ok) throw new Error('Proxy Fail');
-            const data = await res.json();
-            const html = data.contents;
-            
+        const cacheKey = 'joetsu_soccer_rank_cache_v2';
+        const cacheMaxAge = 1000 * 60 * 60 * 6;
+
+        function renderRank(rankNum, pointsStr, isCache) {
+            rankValueEl.classList.remove('loading-dots');
+            rankValueEl.innerHTML = `<span class="rank-highlight">${rankNum}</span>位 <span style="font-size:0.7rem; opacity:0.7;">(${pointsStr}pt${isCache ? '・前回' : ''})</span>`;
+        }
+
+        function saveCache(rankNum, pointsStr) {
+            localStorage.setItem(cacheKey, JSON.stringify({
+                rankNum,
+                pointsStr,
+                savedAt: Date.now()
+            }));
+        }
+
+        function readCache() {
+            try {
+                const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+                if (!cached || !cached.rankNum || !cached.pointsStr) return null;
+                return cached;
+            } catch(e) {
+                return null;
+            }
+        }
+
+        function timeoutPromise(ms) {
+            return new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Timeout')), ms);
+            });
+        }
+
+        async function fetchWithTimeout(url, ms) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), ms);
+            try {
+                const res = await fetch(url, {
+                    signal: controller.signal,
+                    cache: 'no-store'
+                });
+                if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+                return await res.text();
+            } finally {
+                clearTimeout(timer);
+            }
+        }
+
+        function extractHtml(proxyName, text) {
+            if (proxyName === 'allorigins') {
+                const data = JSON.parse(text);
+                return data.contents || '';
+            }
+            return text;
+        }
+
+        function parseJoetsuRank(html) {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             const rows = Array.from(doc.querySelectorAll('tr'));
-            
-            // チーム名「上越」を探す（部分一致）
-            const joetsuRow = rows.find(r => r.textContent.includes('上越'));
-            
-            if (joetsuRow) {
-                const tds = Array.from(joetsuRow.querySelectorAll('td'));
-                if (tds.length >= 3) {
-                    // 通常、1つ目のtdが順位、3つ目あたりが勝ち点
-                    const rankStr = tds[0].textContent.trim();
-                    const pointsStr = tds[2].textContent.trim();
-                    // 数値だけ抽出
-                    const rankNum = rankStr.match(/\d+/) ? rankStr.match(/\d+/)[0] : rankStr;
-                    rankValueEl.classList.remove('loading-dots');
-                    rankValueEl.innerHTML = `<span class="rank-highlight">${rankNum}</span>位 <span style="font-size:0.7rem; opacity:0.7;">(${pointsStr}pt)</span>`;
-                    return; // 成功
-                }
+            const joetsuRow = rows.find(r => r.textContent.replace(/\s+/g, '').includes('上越'));
+
+            if (!joetsuRow) throw new Error('Joetsu row not found');
+
+            const cells = Array.from(joetsuRow.querySelectorAll('th,td')).map(td => td.textContent.trim()).filter(Boolean);
+            const rowText = joetsuRow.textContent.replace(/\s+/g, ' ').trim();
+
+            let rankStr = cells[0] || '';
+            let pointsStr = cells[2] || '';
+
+            const rankMatch = rankStr.match(/\d+/) || rowText.match(/(\d+)\s*位/);
+            const rankNum = rankMatch ? rankMatch[0].replace(/\D/g, '') : rankStr.replace(/\D/g, '');
+
+            const pointCandidates = cells
+                .map(v => v.match(/\d+/) ? v.match(/\d+/)[0] : '')
+                .filter(Boolean);
+
+            if (!pointsStr.match(/\d+/) && pointCandidates.length >= 3) {
+                pointsStr = pointCandidates[2];
             }
-            throw new Error('Data Not Found');
+
+            const pointsMatch = pointsStr.match(/\d+/);
+            const pointsNum = pointsMatch ? pointsMatch[0] : pointsStr;
+
+            if (!rankNum) throw new Error('Rank number not found');
+
+            return {
+                rankNum,
+                pointsStr: pointsNum || '--'
+            };
+        }
+
+        async function fetchRankByProxy(proxy) {
+            const raw = await fetchWithTimeout(proxy.url, proxy.timeout);
+            const html = extractHtml(proxy.name, raw);
+            return parseJoetsuRank(html);
+        }
+
+        const cached = readCache();
+        if (cached) {
+            renderRank(cached.rankNum, cached.pointsStr, true);
+        }
+
+        const proxies = [
+            {
+                name: 'allorigins',
+                url: `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&_=${Date.now()}`,
+                timeout: 2600
+            },
+            {
+                name: 'corsproxy',
+                url: `https://corsproxy.io/?${encodeURIComponent(targetUrl)}&_=${Date.now()}`,
+                timeout: 2600
+            },
+            {
+                name: 'codetabs',
+                url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}&_=${Date.now()}`,
+                timeout: 2600
+            }
+        ];
+
+        try {
+            const rank = await Promise.race([
+                Promise.any(proxies.map(fetchRankByProxy)),
+                timeoutPromise(3200)
+            ]);
+
+            renderRank(rank.rankNum, rank.pointsStr, false);
+            saveCache(rank.rankNum, rank.pointsStr);
         } catch (err) {
-            console.warn("Soccer fetch attempt failed, retrying...", err);
-            rankValueEl.innerText = "読込エラー(再試行中)";
-            // 8秒後に再試行
-            setTimeout(updateSoccerRank, 8000);
+            console.warn("Soccer fetch failed:", err);
+
+            if (!cached) {
+                rankValueEl.classList.remove('loading-dots');
+                rankValueEl.innerText = "取得待ち";
+            }
+
+            setTimeout(updateSoccerRank, 10000);
         }
     }
 
