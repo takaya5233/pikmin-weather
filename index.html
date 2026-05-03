@@ -11,7 +11,6 @@
             --glass-bg: rgba(255, 255, 255, 0.85);
             --text-main: #5D4037; --text-sub: #8D6E63;
             --ok: #28cd41; --warn: #FF9800; --ng: #FF5252;
-            /* 紫色のグラデーション設定 */
             --insta-purple: linear-gradient(45deg, #833ab4, #fd1d1d, #fcb045);
         }
         body { margin: 0; padding: 0; font-family: 'Zen Maru Gothic', sans-serif; background: var(--bg-gradient); display: flex; justify-content: center; color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
@@ -22,24 +21,40 @@
         #time { font-size: 4.5rem; font-weight: 900; margin: -5px 0; letter-spacing: -2px; }
         #date { font-size: 1.2rem; font-weight: 700; color: var(--text-sub); }
         
-        /* Instagramボタン（紫色に変更） */
+        /* Instagramボタン */
         .insta-link {
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%); /* 紫〜青の綺麗なグラデーション */
+            background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
             color: #fff;
             text-decoration: none;
             padding: 8px 18px;
             border-radius: 25px;
             font-size: 0.9rem;
             font-weight: 900;
-            margin: 10px 0;
+            margin: 10px 0 5px;
             box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
             border: 2px solid #fff;
             transition: transform 0.2s ease;
         }
         .insta-link:active { transform: scale(0.95); }
+
+        /* 上越高校 順位表示バッジ */
+        .ranking-badge {
+            display: inline-flex;
+            align-items: center;
+            background: #fff;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 900;
+            color: #5D4037;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+            margin-bottom: 10px;
+        }
+        .ranking-label { color: #2575fc; margin-right: 5px; }
 
         .header-image { margin: 10px auto 15px; display: flex; justify-content: center; }
         .header-image img { width: 100%; max-width: 380px; height: auto; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -81,11 +96,18 @@
         <div id="date">...</div>
         <div id="time">00:00</div>
 
-        <!-- インスタボタン追加部分 -->
         <div>
             <a href="https://www.instagram.com/joetsufc/" target="_blank" class="insta-link">
                 📸 生直のインスタ
             </a>
+        </div>
+        
+        <!-- 上越高校 順位表示用 -->
+        <div id="joetsu-rank-container">
+            <div class="ranking-badge">
+                <span class="ranking-label">⚽ 上越高校</span>
+                <span id="rank-text">順位読み込み中...</span>
+            </div>
         </div>
 
         <div class="header-image">
@@ -156,36 +178,71 @@
     }
 
     async function fetchWeather(pos) {
-        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true&hourly=temperature_2m,weathercode,precipitation_probability,precipitation&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=Asia%2FTokyo&models=best_match`);
-        const data = await res.json();
-        const hr = new Date().getHours();
-        let walk = data.hourly.precipitation[hr] > 0 ? {t:"散歩：雨が降ってるよ",c:"#FF5252"} : {t:"散歩：今なら大丈夫だよ",c:"#28cd41"};
-        let laundry = Math.max(...data.hourly.precipitation_probability.slice(8,17)) > 40 ? {t:"洗濯：部屋干しが安心だよ",c:"#FF5252"} : {t:"洗濯：外で乾くよ",c:"#28cd41"};
-        document.getElementById('c-icon').innerText = weatherIcons[data.current_weather.weathercode]||"☀️";
-        document.getElementById('c-temp').innerText = Math.round(data.current_weather.temperature)+'°';
-        const rangeH = `<span style="color:var(--ng)">${Math.round(data.daily.temperature_2m_max[0])}°</span> / <span style="color:#03a9f4">${Math.round(data.daily.temperature_2m_min[0])}°</span>`;
-        document.getElementById('c-range').innerHTML = rangeH;
-        document.getElementById('badges').innerHTML = `<div class="badge"><span class="dot" style="background:${walk.c}"></span>${walk.t}</div><div class="badge"><span class="dot" style="background:${laundry.c}"></span>${laundry.t}</div><div class="badge"><span class="dot" style="background:#03a9f4"></span>${getFashion(data.current_weather.temperature)}</div>`;
-        const tomCode = data.daily.weathercode[1];
-        document.getElementById('tom-info').innerHTML = `<span style="font-size:1.5rem;">${weatherIcons[tomCode]}</span> <span style="font-weight:700;">${Math.round(data.daily.temperature_2m_max[1])}° / ${Math.round(data.daily.temperature_2m_min[1])}°</span>`;
-        let hH = ''; const sunsetH = parseInt(data.daily.sunset[0].split('T')[1]);
-        data.hourly.time.forEach((t, i) => {
-            const h = parseInt(t.split('T')[1]);
-            if (t.includes(new Date().toLocaleDateString('sv')) && h >= hr && h <= sunsetH + 1) {
-                hH += `<div class="h-item"><div style="font-size:0.7rem; font-weight:700;">${h==hr?'今':h+'時'}</div><div style="font-size:1.5rem; margin:4px 0;">${weatherIcons[data.hourly.weathercode[i]]||"☀️"}</div><div style="font-weight:700;">${Math.round(data.hourly.temperature_2m[i])}°</div></div>`;
+        try {
+            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true&hourly=temperature_2m,weathercode,precipitation_probability,precipitation&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=Asia%2FTokyo&models=best_match`);
+            const data = await res.json();
+            const hr = new Date().getHours();
+            let walk = data.hourly.precipitation[hr] > 0 ? {t:"散歩：雨が降ってるよ",c:"#FF5252"} : {t:"散歩：今なら大丈夫だよ",c:"#28cd41"};
+            let laundry = Math.max(...data.hourly.precipitation_probability.slice(8,17)) > 40 ? {t:"洗濯：部屋干しが安心だよ",c:"#FF5252"} : {t:"洗濯：外で乾くよ",c:"#28cd41"};
+            document.getElementById('c-icon').innerText = weatherIcons[data.current_weather.weathercode]||"☀️";
+            document.getElementById('c-temp').innerText = Math.round(data.current_weather.temperature)+'°';
+            const rangeH = `<span style="color:var(--ng)">${Math.round(data.daily.temperature_2m_max[0])}°</span> / <span style="color:#03a9f4">${Math.round(data.daily.temperature_2m_min[0])}°</span>`;
+            document.getElementById('c-range').innerHTML = rangeH;
+            document.getElementById('badges').innerHTML = `<div class="badge"><span class="dot" style="background:${walk.c}"></span>${walk.t}</div><div class="badge"><span class="dot" style="background:${laundry.c}"></span>${laundry.t}</div><div class="badge"><span class="dot" style="background:#03a9f4"></span>${getFashion(data.current_weather.temperature)}</div>`;
+            const tomCode = data.daily.weathercode[1];
+            document.getElementById('tom-info').innerHTML = `<span style="font-size:1.5rem;">${weatherIcons[tomCode]}</span> <span style="font-weight:700;">${Math.round(data.daily.temperature_2m_max[1])}° / ${Math.round(data.daily.temperature_2m_min[1])}°</span>`;
+            let hH = ''; const sunsetH = parseInt(data.daily.sunset[0].split('T')[1]);
+            data.hourly.time.forEach((t, i) => {
+                const h = parseInt(t.split('T')[1]);
+                if (t.includes(new Date().toLocaleDateString('sv')) && h >= hr && h <= sunsetH + 1) {
+                    hH += `<div class="h-item"><div style="font-size:0.7rem; font-weight:700;">${h==hr?'今':h+'時'}</div><div style="font-size:1.5rem; margin:4px 0;">${weatherIcons[data.hourly.weathercode[i]]||"☀️"}</div><div style="font-weight:700;">${Math.round(data.hourly.temperature_2m[i])}°</div></div>`;
+                }
+            });
+            document.getElementById('h-list').innerHTML = hH;
+            document.getElementById('h-foot').innerHTML = `<span>🌡️ ${rangeH}</span><span>🌅 ${data.daily.sunrise[0].split('T')[1]}</span><span>🌇 ${data.daily.sunset[0].split('T')[1]}</span>`;
+            let wH = ''; for(let i=0; i<7; i++) {
+                const d = new Date(data.daily.time[i]);
+                wH += `<div><div>${i==0?'今日':['日','月','火','水','木','金','土'][d.getDay()]}</div><div style="font-size:1.3rem; margin:4px 0;">${weatherIcons[data.daily.weathercode[i]]}</div><div>${Math.round(data.daily.temperature_2m_max[i])}°</div></div>`;
             }
-        });
-        document.getElementById('h-list').innerHTML = hH;
-        document.getElementById('h-foot').innerHTML = `<span>🌡️ ${rangeH}</span><span>🌅 ${data.daily.sunrise[0].split('T')[1]}</span><span>🌇 ${data.daily.sunset[0].split('T')[1]}</span>`;
-        let wH = ''; for(let i=0; i<7; i++) {
-            const d = new Date(data.daily.time[i]);
-            wH += `<div><div>${i==0?'今日':['日','月','火','水','木','金','土'][d.getDay()]}</div><div style="font-size:1.3rem; margin:4px 0;">${weatherIcons[data.daily.weathercode[i]]}</div><div>${Math.round(data.daily.temperature_2m_max[i])}°</div></div>`;
-        }
-        document.getElementById('w-list').innerHTML = wH;
+            document.getElementById('w-list').innerHTML = wH;
+        } catch(e) { console.error("Weather load fail"); }
     }
 
-    updateQuote(); updateTime(); setInterval(updateTime, 60000);
-    navigator.geolocation.getCurrentPosition(fetchWeather);
+    /* サッカー順位取得ロジック */
+    async function fetchSoccerRank() {
+        const url = "https://koko-soccer.com/score/4345";
+        const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
+        const rankEl = document.getElementById('rank-text');
+
+        try {
+            const response = await fetch(proxyUrl);
+            const data = await response.json();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(data.contents, 'text/html');
+            
+            // ページ内の全テーブル行を検索
+            const rows = doc.querySelectorAll('tr');
+            let found = false;
+
+            for (let row of rows) {
+                if (row.textContent.includes('上越')) {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length >= 3) {
+                        // 順位、勝点などを抽出（サイトの構造に依存）
+                        const rank = cells[0].textContent.trim();
+                        const points = cells[cells.length - 1].textContent.trim();
+                        rankEl.innerHTML = `${rank}位 <span style="font-size:0.7rem; color:var(--text-sub); margin-left:5px;">(勝点:${points})</span>`;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (!found) rankEl.innerText = "順位データ未更新";
+        } catch (e) {
+            rankEl.innerText = "読み込みエラー";
+            console.error(e);
+        }
+    }
 
     const PIKMIN_MONTHLY = {
         "2026-04": { eventName: "チューリップ・フェスティバル", cards: [ { label: "今月のお題", url: "https://lh3.googleusercontent.com/aOe_CqCJdFevS2otcFy913LHXkdbCpGQ4idw-DZqD6qYClbXBxMydcbSm5NhADdjoUnRu9Hg0hsm3RUgprGpSm6mss9BlI6_16k=e365-pa-nu-w1700" }, { label: "ボーナス報酬", url: "https://lh3.googleusercontent.com/jaz1ERppQaebuacrS6xyumT_WFuO2fpw20XqgzAlMyxMj5mB6nerpzA3C7nh2xKtZTRGztpar05amhvcMod2RzRVKUUoYGy1UQ=e365-pa-nu-w1700" } ] },
@@ -202,6 +259,13 @@
         title.textContent = `🌿 ${d.eventName}`;
         content.innerHTML = d.cards.filter(c => c.url).map(c => `<div class="p-img-card"><div style="font-size:0.75rem; font-weight:900; text-align:center; padding:6px;">${c.label}</div><img src="${c.url}" alt="${c.label}"></div>`).join('');
     }
+
+    // 初期化実行
+    updateQuote(); 
+    updateTime(); 
+    setInterval(updateTime, 60000);
+    navigator.geolocation.getCurrentPosition(fetchWeather);
+    fetchSoccerRank(); // サッカー順位取得
     renderPikmin();
 </script>
 </body>
