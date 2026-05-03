@@ -11,6 +11,8 @@
             --glass-bg: rgba(255, 255, 255, 0.85);
             --text-main: #5D4037; --text-sub: #8D6E63;
             --ok: #28cd41; --warn: #FF9800; --ng: #FF5252;
+            /* 紫色のグラデーション設定 */
+            --insta-purple: linear-gradient(45deg, #833ab4, #fd1d1d, #fcb045);
         }
         body { margin: 0; padding: 0; font-family: 'Zen Maru Gothic', sans-serif; background: var(--bg-gradient); display: flex; justify-content: center; color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
         .phone-canvas { width: 100%; max-width: 430px; display: flex; flex-direction: column; gap: 10px; padding: 15px 12px 60px; box-sizing: border-box; }
@@ -19,6 +21,26 @@
         #dt { text-align: center; margin: 15px 0 5px; }
         #time { font-size: 4.5rem; font-weight: 900; margin: -5px 0; letter-spacing: -2px; }
         #date { font-size: 1.2rem; font-weight: 700; color: var(--text-sub); }
+        
+        /* Instagramボタン（紫色に変更） */
+        .insta-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%); /* 紫〜青の綺麗なグラデーション */
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 900;
+            margin: 10px 0;
+            box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+            border: 2px solid #fff;
+            transition: transform 0.2s ease;
+        }
+        .insta-link:active { transform: scale(0.95); }
+
         .header-image { margin: 10px auto 15px; display: flex; justify-content: center; }
         .header-image img { width: 100%; max-width: 380px; height: auto; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
@@ -58,6 +80,14 @@
     <header id="dt">
         <div id="date">...</div>
         <div id="time">00:00</div>
+
+        <!-- インスタボタン追加部分 -->
+        <div>
+            <a href="https://www.instagram.com/joetsufc/" target="_blank" class="insta-link">
+                📸 生直のインスタ
+            </a>
+        </div>
+
         <div class="header-image">
             <img src="https://github.com/takaya5233/pikmin-weather/blob/main/pikmin.png?raw=true" alt="Pikmin">
         </div>
