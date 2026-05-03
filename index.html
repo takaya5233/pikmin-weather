@@ -16,7 +16,7 @@
         body { margin: 0; padding: 0; font-family: 'Zen Maru Gothic', sans-serif; background: var(--bg-gradient); display: flex; justify-content: center; color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
         .phone-canvas { width: 100%; max-width: 430px; display: flex; flex-direction: column; gap: 10px; padding: 15px 12px 60px; box-sizing: border-box; }
 
-        /* ヘッダーと画像 */
+        /* ヘッダー */
         #dt { text-align: center; margin: 15px 0 5px; }
         #time { font-size: 4.5rem; font-weight: 900; margin: -5px 0; letter-spacing: -2px; }
         #date { font-size: 1.2rem; font-weight: 700; color: var(--text-sub); }
@@ -40,21 +40,24 @@
         }
         .insta-link:active { transform: scale(0.95); }
 
-        /* 上越高校 順位表示バッジ */
-        .ranking-badge {
+        /* サッカー順位表示バッジ */
+        .soccer-rank-badge {
             display: inline-flex;
             align-items: center;
             background: #fff;
-            padding: 5px 15px;
-            border-radius: 15px;
-            font-size: 0.8rem;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
             font-weight: 900;
             color: #5D4037;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            border: 1px solid rgba(0,0,0,0.05);
-            margin-bottom: 10px;
+            margin: 5px auto 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.03);
+            width: fit-content;
         }
-        .ranking-label { color: #2575fc; margin-right: 5px; }
+        .rank-highlight { color: #2575fc; font-size: 1.1rem; margin: 0 4px; }
+        .loading-dots:after { content: '...'; animation: dots 1.5s infinite; }
+        @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60% { content: '...'; } }
 
         .header-image { margin: 10px auto 15px; display: flex; justify-content: center; }
         .header-image img { width: 100%; max-width: 380px; height: auto; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -101,12 +104,12 @@
                 📸 生直のインスタ
             </a>
         </div>
-        
-        <!-- 上越高校 順位表示用 -->
-        <div id="joetsu-rank-container">
-            <div class="ranking-badge">
-                <span class="ranking-label">⚽ 上越高校</span>
-                <span id="rank-text">順位読み込み中...</span>
+
+        <!-- 順位表示エリア -->
+        <div id="soccer-container" style="display: flex; justify-content: center;">
+            <div class="soccer-rank-badge">
+                <span>⚽ 上越高校 :</span>
+                <span id="rank-value" class="loading-dots">取得中</span>
             </div>
         </div>
 
@@ -205,42 +208,54 @@
                 wH += `<div><div>${i==0?'今日':['日','月','火','水','木','金','土'][d.getDay()]}</div><div style="font-size:1.3rem; margin:4px 0;">${weatherIcons[data.daily.weathercode[i]]}</div><div>${Math.round(data.daily.temperature_2m_max[i])}°</div></div>`;
             }
             document.getElementById('w-list').innerHTML = wH;
-        } catch(e) { console.error("Weather load fail"); }
+        } catch(e) { console.error(e); }
     }
 
-    /* サッカー順位取得ロジック */
-    async function fetchSoccerRank() {
-        const url = "https://koko-soccer.com/score/4345";
-        const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
-        const rankEl = document.getElementById('rank-text');
-
+    /**
+     * 【強化版】サッカー順位取得ロジック
+     */
+    async function updateSoccerRank() {
+        const rankValueEl = document.getElementById('rank-value');
+        const targetUrl = 'https://koko-soccer.com/score/4345';
+        // 複数のプロキシ候補を使い分けられるように構成
+        const proxies = [
+            url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&_=${Date.now()}`,
+            url => `https://corsproxy.io/?${encodeURIComponent(url)}`
+        ];
+        
+        // とりあえず1つ目のプロキシで実行
         try {
-            const response = await fetch(proxyUrl);
-            const data = await response.json();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(data.contents, 'text/html');
+            const res = await fetch(proxies[0](targetUrl));
+            if (!res.ok) throw new Error('Proxy Fail');
+            const data = await res.json();
+            const html = data.contents;
             
-            // ページ内の全テーブル行を検索
-            const rows = doc.querySelectorAll('tr');
-            let found = false;
-
-            for (let row of rows) {
-                if (row.textContent.includes('上越')) {
-                    const cells = row.querySelectorAll('td');
-                    if (cells.length >= 3) {
-                        // 順位、勝点などを抽出（サイトの構造に依存）
-                        const rank = cells[0].textContent.trim();
-                        const points = cells[cells.length - 1].textContent.trim();
-                        rankEl.innerHTML = `${rank}位 <span style="font-size:0.7rem; color:var(--text-sub); margin-left:5px;">(勝点:${points})</span>`;
-                        found = true;
-                        break;
-                    }
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const rows = Array.from(doc.querySelectorAll('tr'));
+            
+            // チーム名「上越」を探す（部分一致）
+            const joetsuRow = rows.find(r => r.textContent.includes('上越'));
+            
+            if (joetsuRow) {
+                const tds = Array.from(joetsuRow.querySelectorAll('td'));
+                if (tds.length >= 3) {
+                    // 通常、1つ目のtdが順位、3つ目あたりが勝ち点
+                    const rankStr = tds[0].textContent.trim();
+                    const pointsStr = tds[2].textContent.trim();
+                    // 数値だけ抽出
+                    const rankNum = rankStr.match(/\d+/) ? rankStr.match(/\d+/)[0] : rankStr;
+                    rankValueEl.classList.remove('loading-dots');
+                    rankValueEl.innerHTML = `<span class="rank-highlight">${rankNum}</span>位 <span style="font-size:0.7rem; opacity:0.7;">(${pointsStr}pt)</span>`;
+                    return; // 成功
                 }
             }
-            if (!found) rankEl.innerText = "順位データ未更新";
-        } catch (e) {
-            rankEl.innerText = "読み込みエラー";
-            console.error(e);
+            throw new Error('Data Not Found');
+        } catch (err) {
+            console.warn("Soccer fetch attempt failed, retrying...", err);
+            rankValueEl.innerText = "読込エラー(再試行中)";
+            // 8秒後に再試行
+            setTimeout(updateSoccerRank, 8000);
         }
     }
 
@@ -260,13 +275,11 @@
         content.innerHTML = d.cards.filter(c => c.url).map(c => `<div class="p-img-card"><div style="font-size:0.75rem; font-weight:900; text-align:center; padding:6px;">${c.label}</div><img src="${c.url}" alt="${c.label}"></div>`).join('');
     }
 
-    // 初期化実行
-    updateQuote(); 
-    updateTime(); 
-    setInterval(updateTime, 60000);
+    updateQuote(); updateTime(); setInterval(updateTime, 60000);
     navigator.geolocation.getCurrentPosition(fetchWeather);
-    fetchSoccerRank(); // サッカー順位取得
     renderPikmin();
+    // 順位取得開始
+    updateSoccerRank();
 </script>
 </body>
 </html>
