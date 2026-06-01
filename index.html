@@ -361,9 +361,404 @@
     }
 
     const PIKMIN_MONTHLY = {
-        "2026-04": { eventName: "チューリップ・フェスティバル", cards: [ { label: "今月のお題", url: "https://lh3.googleusercontent.com/aOe_CqCJdFevS2otcFy913LHXkdbCpGQ4idw-DZqD6qYClbXBxMydcbSm5NhADdjoUnRu9Hg0hsm3RUgprGpSm6mss9BlI6_16k=e365-pa-nu-w1700" }, { label: "ボーナス報酬", url: "https://lh3.googleusercontent.com/jaz1ERppQaebuacrS6xyumT_WFuO2fpw20XqgzAlMyxMj5mB6nerpzA3C7nh2xKtZTRGztpar05amhvcMod2RzRVKUUoYGy1UQ=e365-pa-nu-w1700" } ] },
-        "2026-05": { eventName: "5月のピクミン情報", cards: [ { label: "今月のお題", url: "https://lh3.googleusercontent.com/afHeTXZAZ0spg_McMmGWEyqVzgvsAVU2Xx5eCn6K1p1fvkOAKQuBZEcVM13ClEVcXfRS7EBovmEdE8C-mxLNhqy2IXSOwSTtt8ow=e365-pa-nu-w850" }, { label: "ボーナス報酬", url: "https://lh3.googleusercontent.com/hJnceMAaxtWGJnBtrntbLOvSCRmSj3-iIPfu3VRRxq-e1Z9vD7rA8E-xuoQTL6xVQNtrV0g8IpaSrUGjMKf6ewc-6M6pBVUPbIg=e365-pa-nu-w850" } ] }
-    };
+        <!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sunshine Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
+        :root {
+            --bg-gradient: linear-gradient(180deg, #FFF9E1 0%, #FFD1A9 50%, #FFB7B2 100%);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --text-main: #5D4037; --text-sub: #8D6E63;
+            --ok: #28cd41; --warn: #FF9800; --ng: #FF5252;
+            --insta-purple: linear-gradient(45deg, #833ab4, #fd1d1d, #fcb045);
+        }
+        body { margin: 0; padding: 0; font-family: 'Zen Maru Gothic', sans-serif; background: var(--bg-gradient); display: flex; justify-content: center; color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
+        .phone-canvas { width: 100%; max-width: 430px; display: flex; flex-direction: column; gap: 10px; padding: 15px 12px 60px; box-sizing: border-box; }
+
+        /* ヘッダー */
+        #dt { text-align: center; margin: 15px 0 5px; }
+        #time { font-size: 4.5rem; font-weight: 900; margin: -5px 0; letter-spacing: -2px; }
+        #date { font-size: 1.2rem; font-weight: 700; color: var(--text-sub); }
+        
+        /* Instagramボタン */
+        .insta-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 900;
+            margin: 10px 0 5px;
+            box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+            border: 2px solid #fff;
+            transition: transform 0.2s ease;
+        }
+        .insta-link:active { transform: scale(0.95); }
+
+        /* サッカー順位表示バッジ */
+        .soccer-rank-badge {
+            display: inline-flex;
+            align-items: center;
+            background: #fff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 900;
+            color: #5D4037;
+            margin: 5px auto 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.03);
+            width: fit-content;
+        }
+        .rank-highlight { color: #2575fc; font-size: 1.1rem; margin: 0 4px; }
+        .loading-dots:after { content: '...'; animation: dots 1.5s infinite; }
+        @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60% { content: '...'; } }
+
+        .header-image { margin: 10px auto 15px; display: flex; justify-content: center; }
+        .header-image img { width: 100%; max-width: 380px; height: auto; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+        .quote-c { margin: 10px 5px; background: #fff; padding: 15px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .quote-text { font-size: 0.9rem; font-weight: 700; line-height: 1.6; }
+        .quote-author { font-size: 0.7rem; color: var(--text-sub); text-align: right; display: block; margin-top: 6px; }
+
+        .card { background: var(--glass-bg); backdrop-filter: blur(8px); border: 2px solid #fff; border-radius: 24px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .section-title { font-size: 0.85rem; font-weight: 900; color: var(--text-sub); margin-bottom: 10px; display: block; }
+
+        .current-main { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+        .left-weather-stack { display: flex; flex-direction: column; align-items: center; min-width: 80px; background: rgba(255,255,255,0.4); padding: 6px 4px; border-radius: 16px; }
+        .weather-top-row { display: flex; align-items: center; gap: 2px; justify-content: center; width: 100%; line-height: 1; }
+        .current-icon-box { font-size: 1.5rem; }
+        .temp-display { font-size: 1.9rem; font-weight: 700; letter-spacing: -1px; }
+        .today-temp-range { font-size: 0.75rem; font-weight: 700; margin-top: 4px; text-align: center; }
+
+        .badges { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
+        .badge { font-size: clamp(0.6rem, 2.9vw, 0.8rem); font-weight: 900; padding: 5px 7px; border-radius: 10px; background: #fff; display: flex; align-items: center; gap: 5px; word-break: break-all; border: 1px solid rgba(0,0,0,0.03); }
+        .dot { height: 8px; width: 8px; border-radius: 50%; flex-shrink: 0; }
+
+        .tomorrow-box { border-top: 1px dashed rgba(0,0,0,0.1); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .tomorrow-label { font-size: 0.8rem; font-weight: 900; color: var(--text-sub); }
+
+        .hourly-scroll { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 10px; }
+        .hourly-scroll::-webkit-scrollbar { display: none; }
+        .h-item { text-align: center; min-width: 45px; }
+
+        .hourly-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; font-size: 0.75rem; font-weight: 700; color: var(--text-sub); border-top: 1px dashed rgba(0,0,0,0.1); }
+        .weekly { display: flex; justify-content: space-between; text-align: center; font-size: 0.75rem; font-weight: 700; }
+        .p-img-card { background: #fff; border-radius: 20px; overflow: hidden; margin-top: 10px; border: 1px solid #eee; }
+        .p-img-card img { width: 100%; height: auto; display: block; }
+    </style>
+</head>
+<body>
+<div class="phone-canvas">
+    <header id="dt">
+        <div id="date">...</div>
+        <div id="time">00:00</div>
+
+        <div>
+            <a href="https://www.instagram.com/joetsufc/" target="_blank" class="insta-link">
+                📸 生直のインスタ
+            </a>
+        </div>
+
+        <!-- 順位表示エリア -->
+        <div id="soccer-container" style="display: flex; justify-content: center;">
+            <div class="soccer-rank-badge">
+                <span>⚽ 上越高校 :</span>
+                <span id="rank-value" class="loading-dots">取得中</span>
+            </div>
+        </div>
+
+        <div class="header-image">
+            <img src="https://github.com/takaya5233/pikmin-weather/blob/main/pikmin.png?raw=true" alt="Pikmin">
+        </div>
+    </header>
+
+    <div class="quote-c">
+        <span id="quote" class="quote-text">...</span>
+        <span class="quote-author">― 空海</span>
+    </div>
+
+    <section class="card">
+        <span class="section-title">今日のあんしん予報</span>
+        <div class="current-main">
+            <div class="left-weather-stack">
+                <div class="weather-top-row">
+                    <div id="c-icon" class="current-icon-box">☀️</div>
+                    <div id="c-temp" class="temp-display">--°</div>
+                </div>
+                <div id="c-range" class="today-temp-range">-- / --</div>
+            </div>
+            <div id="badges" class="badges"></div>
+        </div>
+        <div class="tomorrow-box">
+            <span class="tomorrow-label">明日の予報</span>
+            <div id="tom-info" style="display:flex; align-items:center; gap:10px;"></div>
+        </div>
+    </section>
+
+    <section class="card">
+        <span class="section-title">日没までの空もよう</span>
+        <div id="h-list" class="hourly-scroll"></div>
+        <div id="h-foot" class="hourly-footer"></div>
+    </section>
+
+    <section class="card">
+        <span class="section-title">週間予報</span>
+        <div id="w-list" class="weekly"></div>
+    </section>
+
+    <section class="card">
+        <span class="section-title" id="pikmin-title">ピクミンブルーム 最新情報</span>
+        <div id="pikmin-content"></div>
+    </section>
+</div>
+
+<script>
+    const kukaiQuotes = ["心暗きときは、即ち遭う所ことごとく禍なり。","自心の源をさとるを、さとりという。心に答えがあります。","心を明るくしていれば、どこにいても幸せは見つかります。","ものの興廃は、必ず人に由る。すべてはあなた次第です。","それ、仏法遥かにあらず。心の中にこそ真実がある。","一隅を照らす。あなたらしく輝けばよいのです。","人の一生は、心ひとつの置きどころ。明るい方を向きましょう。","今この瞬間を大切に。一歩ずつ、静かに進んでいきましょう。","願わくは、この功徳を以て、あまねく一切に及ぼし、仏道を成ぜん。","虚空尽き、衆生尽き、涅槃尽きなば、我が願いも尽きなむ。","自身の宝、磨かなければ光りません。日々の歩みを大切に。","悟りとは、外にあるものではなく、自分の中に眠る宝物です。","あなたの笑顔が、誰かの心を照らす光になります。","無理をせず、しかし怠らず。中道の心がけが大切です。","水は方円の器に従う。柔軟な心で今日を過ごしましょう。","困難はあなたを育てる糧。恐れずに向き合えば道は開けます。","静かな心で耳を澄ませば、宇宙の真理が聞こえてきます。","言葉は心を表す鏡。優しく温かな言葉を選びましょう。","自分を信じる力。それがすべての始まりです。","他人の幸せを願う心が、あなた自身の幸せを呼び込みます。","今日という日は二度と来ない。一分一秒を慈しみましょう。","心の中の雑草を抜き、美しい花の種を蒔きましょう。","知識は実践してこそ知恵となる。まずは動いてみることです。","風のように軽やかに、山のようにどっしりと構えましょう。","過去に囚われず、未来を憂えず。ただ「今」を懸命に。","感謝の心は、人生を豊かにする魔法の鍵です。","どんなに遠い道のりも、最初の一歩から始まります。","あなたの内側にある太陽を、曇らせてはいけません。","器を大きくすれば、受け取れる幸せも大きくなります。","自分を許すことができれば、他人も許せるようになります。","答えを急がない。熟した果実が落ちるのを待つように。","心の洗濯をしましょう。深呼吸をして、新しい空気を。","誠実な歩みは、必ず誰かが見ていてくれます。","自分を飾る必要はありません。ありのままが一番尊い。","欲望に振り回されず、足るを知る心が安らぎを生みます。","一滴の水が集まって海になる。小さな善行を積み重ねて。","怒りは自分を傷つける毒。穏やかな川の流れをイメージして。","迷いがあるのは成長している証。自信を持って進みなさい。","人生は一冊の本。あなたが素晴らしい物語を書きましょう。","孤独は自分を見つめる時間。寂しさを強さに変えて。","心に余裕を持てば、景色はもっと違って見えます。","失敗は成功への地図。間違えた場所を覚えればよいのです。","他人の物差しで自分を測らない。あなたはあなたのままで。","愛の心は、氷をも溶かす力を持っています。","どんな嵐の後にも、必ず晴天がやってきます。","学び続ける心は、あなたをいつまでも若々しく保ちます。","謙虚さは最大の防御であり、最大の魅力でもあります。","あなたの存在そのものが、世界への贈り物です。","今あるものに目を向ければ、世界は恵みに溢れています。","集中する時間は、心を研ぎ澄ます儀式です。","自分を大切にできない人は、他人も大切にできません。","人生の正解は一つではない。あなたなりの正解を。","一期一会。出会うすべての人を大切にしましょう。","夢を描く力。それが未来を創るエネルギーです。","立ち止まってもいい。景色を楽しむ余裕を持ちましょう。","信念は、暗闇を照らす松明のようなものです。","心に潤いを。美しいものに触れる時間を作りましょう。","焦りは禁物。種を蒔いてすぐには花は咲きません。","自分の弱さを認めることが、本当の強さへの第一歩。","言葉にできない想いも、宇宙はすべて受け止めてくれます。","日常の当たり前の中に、奇跡は隠れています。","比べるべきは他人ではなく、昨日の自分です。","道に迷ったら、一番ワクワクする方を選んでみて。","あなたは一人ではありません。目に見えない繋がりを信じて。","心の鏡を磨き、真実を映し出しましょう。","優しさは、巡り巡って必ずあなたに帰ってきます。","変化を恐れず、新しい風を自分に取り込みましょう。","自分を褒めてあげてください。今日まで頑張ってきたことを。","どんな時も、心に一輪の花を絶やさないように。","目的地を忘れなければ、遠回りもまた楽し。","あなたの言葉が、誰かの背中を押す力になります。","静寂の中にこそ、本当の答えが眠っています。","自分の人生の主人公は、他の誰でもないあなたです。","小さな喜びを見つける天才になりましょう。","限界を決めているのは、いつだって自分自身です。","心を開けば、新しい世界があなたを歓迎してくれます。","挑戦することに遅すぎることはありません。","あなたの手は、誰かを助け、何かを創るためにあります。","直感は魂からのメッセージ。大切にしてください。","誠実さは、最も確かな信頼の礎となります。","雨の日は雨を楽しみ、晴れの日は晴れを喜ぶ。","自分の中に流れる生命の力を感じてみてください。","可能性は無限大。自ら枠を作らないように。","微笑みは、言葉を超えたコミュニケーションです。","何事も面白がること。それが人生を輝かせるコツです。","心に響く言葉を、お守りのように持ち歩きましょう。","あなたの光を誰にも消させてはいけません。","人生は修行ではなく、楽しむためのステージです。","感謝の言葉を口に出すたび、幸福が近づきます。","整理整頓は心の整理。身の回りを清めましょう。","与えることは、受け取ること以上に心を満たします。","あなたの情熱が、凍てついた心を動かします。","休むこともまた、大切な仕事の一部です。","素直な心は、すべての扉を開けるパスワード。","毎日が新しい誕生日。新しい自分を始めましょう。","自分らしく生きることが、最大の社会貢献です。","空を見上げる余裕を。心はいつも広くありたい。","宇宙は常にあなたを応援しています。","最後は必ずうまくいきます。そうでなければ最後ではない。","一歩ずつ、淡々と。それが最も遠くまで行く方法です。","今日も良い一日になります。心からそう信じて。","阿字の子が阿字のふるさと立ち出でて また阿字のふるさとへ帰る。","生れ生れ生れ生れて生のおわりに暗く 死に死に死に死んで死の始めに冥し。"];
+    const weatherIcons = {0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌦️",61:"🌧️",63:"🌧️",65:"🌧️",80:"🌦️",81:"🌧️",82:"🌧️",95:"⚡"};
+
+    function updateQuote() {
+        let pool = JSON.parse(localStorage.getItem('qp') || "[]");
+        if (pool.length === 0) pool = kukaiQuotes.map((_, i) => i);
+        const idx = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
+        localStorage.setItem('qp', JSON.stringify(pool));
+        document.getElementById('quote').innerText = kukaiQuotes[idx];
+    }
+
+    function updateTime() {
+        const n = new Date(); const d = ['日','月','火','水','木','金','土'];
+        document.getElementById('date').innerText = (n.getMonth()+1)+'月'+n.getDate()+'日 ('+d[n.getDay()]+')';
+        document.getElementById('time').innerText = n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
+    }
+
+    function getFashion(t) {
+        if(t<5) return "服装：ダウンであったかく"; if(t<10) return "服装：冬コートが必要だよ"; if(t<15) return "服装：厚手のニットが◎"; if(t<20) return "服装：長袖か羽織ものを用意"; if(t<25) return "服装：半袖＋薄手の羽織が◎"; return "服装：半袖1枚で大丈夫";
+    }
+
+    async function fetchWeather(pos) {
+        try {
+            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true&hourly=temperature_2m,weathercode,precipitation_probability,precipitation&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=Asia%2FTokyo&models=best_match`);
+            const data = await res.json();
+            const hr = new Date().getHours();
+            let walk = data.hourly.precipitation[hr] > 0 ? {t:"散歩：雨が降ってるよ",c:"#FF5252"} : {t:"散歩：今なら大丈夫だよ",c:"#28cd41"};
+            let laundry = Math.max(...data.hourly.precipitation_probability.slice(8,17)) > 40 ? {t:"洗濯：部屋干しが安心だよ",c:"#FF5252"} : {t:"洗濯：外で乾くよ",c:"#28cd41"};
+            document.getElementById('c-icon').innerText = weatherIcons[data.current_weather.weathercode]||"☀️";
+            document.getElementById('c-temp').innerText = Math.round(data.current_weather.temperature)+'°';
+            const rangeH = `<span style="color:var(--ng)">${Math.round(data.daily.temperature_2m_max[0])}°</span> / <span style="color:#03a9f4">${Math.round(data.daily.temperature_2m_min[0])}°</span>`;
+            document.getElementById('c-range').innerHTML = rangeH;
+            document.getElementById('badges').innerHTML = `<div class="badge"><span class="dot" style="background:${walk.c}"></span>${walk.t}</div><div class="badge"><span class="dot" style="background:${laundry.c}"></span>${laundry.t}</div><div class="badge"><span class="dot" style="background:#03a9f4"></span>${getFashion(data.current_weather.temperature)}</div>`;
+            const tomCode = data.daily.weathercode[1];
+            document.getElementById('tom-info').innerHTML = `<span style="font-size:1.5rem;">${weatherIcons[tomCode]}</span> <span style="font-weight:700;">${Math.round(data.daily.temperature_2m_max[1])}° / ${Math.round(data.daily.temperature_2m_min[1])}°</span>`;
+            let hH = ''; const sunsetH = parseInt(data.daily.sunset[0].split('T')[1]);
+            data.hourly.time.forEach((t, i) => {
+                const h = parseInt(t.split('T')[1]);
+                if (t.includes(new Date().toLocaleDateString('sv')) && h >= hr && h <= sunsetH + 1) {
+                    hH += `<div class="h-item"><div style="font-size:0.7rem; font-weight:700;">${h==hr?'今':h+'時'}</div><div style="font-size:1.5rem; margin:4px 0;">${weatherIcons[data.hourly.weathercode[i]]||"☀️"}</div><div style="font-weight:700;">${Math.round(data.hourly.temperature_2m[i])}°</div></div>`;
+                }
+            });
+            document.getElementById('h-list').innerHTML = hH;
+            document.getElementById('h-foot').innerHTML = `<span>🌡️ ${rangeH}</span><span>🌅 ${data.daily.sunrise[0].split('T')[1]}</span><span>🌇 ${data.daily.sunset[0].split('T')[1]}</span>`;
+            let wH = ''; for(let i=0; i<7; i++) {
+                const d = new Date(data.daily.time[i]);
+                wH += `<div><div>${i==0?'今日':['日','月','火','水','木','金','土'][d.getDay()]}</div><div style="font-size:1.3rem; margin:4px 0;">${weatherIcons[data.daily.weathercode[i]]}</div><div>${Math.round(data.daily.temperature_2m_max[i])}°</div></div>`;
+            }
+            document.getElementById('w-list').innerHTML = wH;
+        } catch(e) { console.error(e); }
+    }
+
+    /**
+     * 【高速版】サッカー順位取得ロジック
+     * - 前回取得済みの順位をlocalStorageから即表示
+     * - 複数プロキシを同時に走らせ、最初に成功したものを採用
+     * - 遅い通信は短時間で打ち切り、画面を待たせない
+     */
+    async function updateSoccerRank() {
+        const rankValueEl = document.getElementById('rank-value');
+        const targetUrl = 'https://koko-soccer.com/score/4345';
+        const cacheKey = 'joetsu_soccer_rank_cache_v2';
+        const cacheMaxAge = 1000 * 60 * 60 * 6;
+
+        function renderRank(rankNum, pointsStr, isCache) {
+            rankValueEl.classList.remove('loading-dots');
+            rankValueEl.innerHTML = `<span class="rank-highlight">${rankNum}</span>位 <span style="font-size:0.7rem; opacity:0.7;">(${pointsStr}pt${isCache ? '・前回' : ''})</span>`;
+        }
+
+        function saveCache(rankNum, pointsStr) {
+            localStorage.setItem(cacheKey, JSON.stringify({
+                rankNum,
+                pointsStr,
+                savedAt: Date.now()
+            }));
+        }
+
+        function readCache() {
+            try {
+                const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+                if (!cached || !cached.rankNum || !cached.pointsStr) return null;
+                return cached;
+            } catch(e) {
+                return null;
+            }
+        }
+
+        function timeoutPromise(ms) {
+            return new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Timeout')), ms);
+            });
+        }
+
+        async function fetchWithTimeout(url, ms) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), ms);
+            try {
+                const res = await fetch(url, {
+                    signal: controller.signal,
+                    cache: 'no-store'
+                });
+                if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+                return await res.text();
+            } finally {
+                clearTimeout(timer);
+            }
+        }
+
+        function extractHtml(proxyName, text) {
+            if (proxyName === 'allorigins') {
+                const data = JSON.parse(text);
+                return data.contents || '';
+            }
+            return text;
+        }
+
+        function parseJoetsuRank(html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const rows = Array.from(doc.querySelectorAll('tr'));
+            const joetsuRow = rows.find(r => r.textContent.replace(/\s+/g, '').includes('上越'));
+
+            if (!joetsuRow) throw new Error('Joetsu row not found');
+
+            const cells = Array.from(joetsuRow.querySelectorAll('th,td')).map(td => td.textContent.trim()).filter(Boolean);
+            const rowText = joetsuRow.textContent.replace(/\s+/g, ' ').trim();
+
+            let rankStr = cells[0] || '';
+            let pointsStr = cells[2] || '';
+
+            const rankMatch = rankStr.match(/\d+/) || rowText.match(/(\d+)\s*位/);
+            const rankNum = rankMatch ? rankMatch[0].replace(/\D/g, '') : rankStr.replace(/\D/g, '');
+
+            const pointCandidates = cells
+                .map(v => v.match(/\d+/) ? v.match(/\d+/)[0] : '')
+                .filter(Boolean);
+
+            if (!pointsStr.match(/\d+/) && pointCandidates.length >= 3) {
+                pointsStr = pointCandidates[2];
+            }
+
+            const pointsMatch = pointsStr.match(/\d+/);
+            const pointsNum = pointsMatch ? pointsMatch[0] : pointsStr;
+
+            if (!rankNum) throw new Error('Rank number not found');
+
+            return {
+                rankNum,
+                pointsStr: pointsNum || '--'
+            };
+        }
+
+        async function fetchRankByProxy(proxy) {
+            const raw = await fetchWithTimeout(proxy.url, proxy.timeout);
+            const html = extractHtml(proxy.name, raw);
+            return parseJoetsuRank(html);
+        }
+
+        const cached = readCache();
+        if (cached) {
+            renderRank(cached.rankNum, cached.pointsStr, true);
+        }
+
+        const proxies = [
+            {
+                name: 'allorigins',
+                url: `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&_=${Date.now()}`,
+                timeout: 2600
+            },
+            {
+                name: 'corsproxy',
+                url: `https://corsproxy.io/?${encodeURIComponent(targetUrl)}&_=${Date.now()}`,
+                timeout: 2600
+            },
+            {
+                name: 'codetabs',
+                url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}&_=${Date.now()}`,
+                timeout: 2600
+            }
+        ];
+
+        try {
+            const rank = await Promise.race([
+                Promise.any(proxies.map(fetchRankByProxy)),
+                timeoutPromise(3200)
+            ]);
+
+            renderRank(rank.rankNum, rank.pointsStr, false);
+            saveCache(rank.rankNum, rank.pointsStr);
+        } catch (err) {
+            console.warn("Soccer fetch failed:", err);
+
+            if (!cached) {
+                rankValueEl.classList.remove('loading-dots');
+                rankValueEl.innerText = "取得待ち";
+            }
+
+            setTimeout(updateSoccerRank, 10000);
+        }
+    }
+
+const PIKMIN_MONTHLY = {
+    "2026-06": {
+        eventName: "6月のピクミン情報",
+        cards: [
+            {
+                label: "今月のお題",
+                url: "https://raw.githubusercontent.com/takaya5233/pikmin-weather/main/6%E6%9C%88%E3%81%8A%E9%A1%8C.png"
+            },
+            {
+                label: "ボーナス報酬",
+                url: "https://raw.githubusercontent.com/takaya5233/pikmin-weather/main/6%E6%9C%88%E5%A0%B1%E9%85%AC.png"
+            }
+        ]
+    }
+};
+
+    function renderPikmin() {
+        const now = new Date();
+        const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const d = PIKMIN_MONTHLY[key];
+        const content = document.getElementById('pikmin-content');
+        const title = document.getElementById('pikmin-title');
+        if (!d) { content.innerHTML = `<div style="text-align:center; padding:20px; color:#bbb; font-size:0.8rem;">📋 ${now.getMonth()+1}月のデータは未登録です</div>`; return; }
+        title.textContent = `🌿 ${d.eventName}`;
+        content.innerHTML = d.cards.filter(c => c.url).map(c => `<div class="p-img-card"><div style="font-size:0.75rem; font-weight:900; text-align:center; padding:6px;">${c.label}</div><img src="${c.url}" alt="${c.label}"></div>`).join('');
+    }
+
+    updateQuote(); updateTime(); setInterval(updateTime, 60000);
+    navigator.geolocation.getCurrentPosition(fetchWeather);
+    renderPikmin();
+    // 順位取得開始
+    updateSoccerRank();
+</script>
+</body>
+</html>
+
 
     function renderPikmin() {
         const now = new Date();
