@@ -11,7 +11,6 @@
             --glass-bg: rgba(255, 255, 255, 0.85);
             --text-main: #5D4037; --text-sub: #8D6E63;
             --ok: #28cd41; --warn: #FF9800; --ng: #FF5252;
-            --insta-purple: linear-gradient(45deg, #833ab4, #fd1d1d, #fcb045);
         }
         body { margin: 0; padding: 0; font-family: 'Zen Maru Gothic', sans-serif; background: var(--bg-gradient); display: flex; justify-content: center; color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
         .phone-canvas { width: 100%; max-width: 430px; display: flex; flex-direction: column; gap: 10px; padding: 15px 12px 60px; box-sizing: border-box; }
@@ -40,7 +39,8 @@
         }
         .insta-link:active { transform: scale(0.95); }
 
-        /* サッカー順位表示バッジ */
+        /* サッカー順位表示バッジ & 動画エリア */
+        .soccer-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 10px; }
         .soccer-rank-badge {
             display: inline-flex;
             align-items: center;
@@ -50,7 +50,6 @@
             font-size: 0.85rem;
             font-weight: 900;
             color: #5D4037;
-            margin: 5px auto 10px;
             box-shadow: 0 3px 10px rgba(0,0,0,0.08);
             border: 1px solid rgba(0,0,0,0.03);
             width: fit-content;
@@ -58,6 +57,10 @@
         .rank-highlight { color: #2575fc; font-size: 1.1rem; margin: 0 4px; }
         .loading-dots:after { content: '...'; animation: dots 1.5s infinite; }
         @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60% { content: '...'; } }
+
+        /* サッカー動画プレイヤーのスタイル */
+        .soccer-video-box { width: 100%; max-width: 380px; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: #000; line-height: 0; }
+        .soccer-video-box video { width: 100%; height: auto; display: block; }
 
         .header-image { margin: 10px auto 15px; display: flex; justify-content: center; }
         .header-image img { width: 100%; max-width: 380px; height: auto; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -82,6 +85,7 @@
 
         .tomorrow-box { border-top: 1px dashed rgba(0,0,0,0.1); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
         .tomorrow-label { font-size: 0.8rem; font-weight: 900; color: var(--text-sub); }
+        .tomorrow-info-container { display: flex; align-items: center; gap: 10px; }
 
         .hourly-scroll { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 10px; }
         .hourly-scroll::-webkit-scrollbar { display: none; }
@@ -105,10 +109,15 @@
             </a>
         </div>
 
-        <div id="soccer-container" style="display: flex; justify-content: center;">
+        <div id="soccer-container" class="soccer-wrap">
+            <!-- 上越高校順位バッジ -->
             <div class="soccer-rank-badge">
                 <span>⚽ 上越高校 :</span>
                 <span id="rank-value" class="loading-dots">取得中</span>
+            </div>
+            <!-- iPhone対応 動画プレイヤーエリア（RawのURLを設定済み） -->
+            <div class="soccer-video-box">
+                <video src="https://github.com/takaya5233/pikmin-weather/blob/main/joetsu_match.mp4?raw=true" controls playsinline preload="metadata"></video>
             </div>
         </div>
 
@@ -136,7 +145,7 @@
         </div>
         <div class="tomorrow-box">
             <span class="tomorrow-label">明日の予報</span>
-            <div id="tom-info" style="display:flex; align-items:center; gap:10px;"></div>
+            <div id="tom-info" class="tomorrow-info-container"></div>
         </div>
     </section>
 
@@ -158,7 +167,7 @@
 </div>
 
 <script>
-    const kukaiQuotes = ["心暗きときは、即ち遭う所ことごとく禍なり。","自心の源をさとるを、さとりという。心に答えがあります。","心を明るくしていれば、どこにいても幸せは見つかります。","ものの興廃は、必ず人に由る。すべてはあなた次第です。","それ、仏法遥かにあらず。心の中にこそ真実がある。","一隅を照らす。あなたらしく輝けばよいのです。","人の一生は、心ひとつの置きどころ。明るい方を向きましょう。","今この瞬間を大切に。一歩ずつ、静かに進んでいきましょう。","願わくは、この功徳を以て、あまねく一切に及ぼし、仏道を成ぜん。","虚空尽き、衆生尽き、涅槃尽きなば、我が願いも尽きなむ。","自身の宝、磨かなければ光りません。日々の歩みを大切に。","悟りとは、外にあるものではなく、自分の中に眠る宝物です。","あなたの笑顔が、誰かの心を照らす光になります。","無理をせず、しかし怠らず。中道の心がけが大切です。","水は方円の器に従う。柔軟な心で今日を過ごしましょう。","困難はあなたを育てる糧。恐れずに向き合えば道は開けます。","静かな心で耳を澄ませば、宇宙の真理が聞こえてきます。","言葉は心を表す鏡。優しく温かな言葉を選びましょう。","自分を信じる力。それがすべての始まりです。","他人の幸せを願う心が、あなた自身の幸せを呼び込みます。","今日という日は二度と来ない。一分一秒を慈しみましょう。","心の中の雑草を抜き、美しい花の種を蒔きましょう。","知識は実践してこそ知恵となる。まずは動いてみることです。","風のように軽やかに、山のようにどっしりと構えましょう。","過去に囚われず、未来を憂えず。ただ「今」を懸命に。","感謝の心は、人生を豊かにする魔法の鍵です。","どんなに遠い道のりも、最初の一歩から始まります。","あなたの内側にある太陽を、曇らせてはいけません。","器を大きくすれば、受け取れる幸せも大きくなります。","自分を許すことができれば、他人も許せるようになります。","答えを急がない。熟した果実が落ちるのを待つように。","心の洗濯をしましょう。深呼吸をして、新しい空気を。","誠実な歩みは、必ず誰かが見ていてくれます。","自分を飾る必要はありません。ありのままが一番尊い。","欲望に振り回されず、足るを知る心が安らぎを生みます。","一滴の水が集まって海になる。小さな善行を積み重ねて。","怒りは自分を傷つける毒。穏やかな川の流れをイメージして。","迷いがあるのは成長している証。自信を持って進みなさい。","人生は一冊の本。あなたが素晴らしい物語を書きましょう。","孤独は自分を見つめる時間。寂しさを強さに変えて。","心に余裕を持てば、景色はもっと違って見えます。","失敗は成功への地図。間違えた場所を覚えればよいのです。","他人の物差しで自分を測らない。あなたはあなたのままで。","愛の心は、氷をも溶かす力を持っています。","どんな嵐の後にも、必ず晴天がやってきます。","学び続ける心は、あなたをいつまでも若々しく保ちます。","謙虚さは最大の防御であり、最大の魅力でもあります。","あなたの存在そのものが、世界への贈り物です。","今あるものに目を向けない。世界は恵みに溢れています。","集中する時間は、心を研ぎ澄ます儀式です。","自分を大切にできない人は、他人も大切にできません。","人生の正解は一つではない。あなたなりの正解を。","一期一会。出会うすべての人を大切にしましょう。","夢を描く力。それが未来を創るエネルギーです。","立ち止まってもいい。景色を楽しむ余裕を持ちましょう。","信念は、暗闇を照らす松明のようなものです。","心に潤いを。美しいものに触れる時間を作りましょう。","焦りは禁物。種を蒔いてすぐには花は咲きません。","自分の弱さを認めることが、本当の強さへの第一歩。","言葉にできない想いも、宇宙はすべて受け止めてくれます。","日常の当たり前の中に、奇跡は隠れています。","比べるべきは他人ではなく、昨日の自分です。","道に迷ったら、一番ワクワクする方を選んでみて。","あなたは一人ではありません。目に見えない繋がりを信じて。","心の鏡を磨き、真実を映し出しましょう。","優しさは、巡り巡って必ずあなたに帰ってきます。","変化を恐れず、新しい風を自分に取り込みましょう。","自分を褒めてあげてください。今日まで頑張ってきたことを。","どんな時も、心に一輪の花を絶やさないように。","目的地を忘れなければ、遠回りもまた楽し。","あなたの言葉が、誰かの背中を押す力になります。","静寂の中にこそ、本当の答えが眠っています。","自分の人生の主人公は、他の誰でもないあなたです。","小さな喜びを見つける天才になりましょう。","限界を決めているのは、いつだって自分自身です。","心を開けば、新しい世界があなたを歓迎してくれます。","挑戦することに遅すぎることはありません。","あなたの手は、誰かを助け、何かを創るためにあります。","直感は魂からのメッセージ。大切にしてください。","誠実さは、最も確かな信頼の礎となります。","雨の日は雨を楽しみ、晴れの日は晴れを喜ぶ。","自分の中に流れる生命の力を感じてみてください。","可能性は無限大。自ら枠を作らないように。","微笑みは、言葉を超えたコミュニケーションです。","何事も面白がること。それが人生を輝かせるコツです。","心に響く言葉を、お守りのように持ち歩きましょう。","あなたの光を誰にも消させてはいけません。","人生は修行ではなく、楽しむためのステージです。","感謝の言葉を口に出すたび、幸福が近づきます。","整理整頓は心の整理。身の回りを清めましょう。","与えることは、受け取ること以上に心を満たします。","あなたの情熱が、凍てついた心を動かします。","休むこともまた、大切な仕事の一部です。","素直な心は、すべての扉を開けるパスワード。","毎日が新しい誕生日。新しい自分を始めましょう。","自分らしく生きることが、最大の社会貢献です。","空を見上げる余裕を。心はいつも広くありたい。","宇宙は常にあなたを応援しています。","最後は必ずうまくいきます。そうでなければ最後ではない。","一歩ずつ、淡々と。それが最も遠くまで行く方法です。","今日も良い一日になります。心からそう信じて。","阿字の子が阿字のふるさと立ち出でて また阿字のふるさとへ帰る。","生れ生れ生れ生れて生のおわりに暗く 死に死に死に死んで死の始めに冥し。"];
+    const kukaiQuotes = ["心暗きときは、即ち遭う所ことごとく禍なり。","自心の源をさとるを、さとりという。心に答えがあります。","心を明るくしていれば、どこにいても幸せは見つかります。","ものの興廃は、必ず人に由る。すべてはあなた次第です。","それ、仏法遥かにあらず。心の中にこそ真実がある。","一隅を照らす。あなたらしく輝けばよいのです。","人の一生は、心ひとつの置きどころ。明るい方を向きましょう。","今この瞬間を大切に。一歩ずつ、静かに進んでいきましょう。","願わくは、この功徳を以て、あまねく一切に及ぼし、仏道を成ぜん。","虚空尽き、衆生尽き、涅槃尽きなば、我が願いも尽きなむ。","自身の宝、磨かなければ光りません。日々の歩みを大切に。","悟りとは、外にあるものではなく、自分の中に眠る宝物です。","あなたの笑顔が、誰かの心を照らす光になります。","無理をせず、しかし怠らず。中道の心がけが大切です。","水は方円の器に従う。柔軟な心で今日を過ごしましょう。","困難はあなたを育てる糧。恐れずに向き合えば道は開けます。","静かな心で耳を澄ませば、宇宙の真理が聞こえてきます。","言葉は心を表す鏡。優しく温かな言葉を選びましょう。","自分を信じる力。それがすべての始まりです。","他人の幸せを願う心が、あなた自身の幸せを呼び込みます。","今日という日は二度と来ない。一分一秒を慈しみましょう。","心の中の雑草を抜き、美しい花の種を蒔きましょう。","知識は実践してこそ知恵となる。まずは動いてみることです。","風のように軽やかに、山のようにどっしりと構えましょう。","過去に囚われず、未来を憂えず。ただ「今」を懸命に。","感謝の心は、人生を豊かにする魔法の鍵です。","どんなに遠い道のりも、最初の一歩から始まります。","あなたの内側にある太陽を、曇らせてはいけません。","器を大きくすれば、受け取れる幸せも大きくなります。","自分を許すことができれば、他人も許せるようになります。","答えを急がない。熟した果実が落ちるのを待つように。","心の洗濯をしましょう。深呼吸をして、新しい空気を。","誠実な歩みは、必ず誰かが見ていてくれます。","自分を飾る必要はありません。ありのままが一番尊い.","欲望に振り回されず、足るを知る心が安らぎを生みます。","一滴の水が集まって海になる。小さな善行を積み重ねて。","怒りは自分を傷つける毒。穏やかな川の流れをイメージして。","迷いがあるのは成長している証。自信を持って進みなさい。","人生は一冊の本。あなたが素晴らしい物語を書きましょう。","孤独は自分を見つめる時間。寂しさを強さに変えて。","心に余裕を持てば、景色はもっと違って見えます。","失敗は成功への地図。間違えた場所を覚えればよいのです。","他人の物差しで自分を測らない。あなたはあなたのままで。","愛の心は、氷をも溶かす力を持っています。","どんな嵐の後にも、必ず晴天がやってきます。","学び続ける心は、あなたをいつまでも若々しく保ちます。","謙虚さは最大の防御であり、最大の魅力でもあります。","あなたの存在そのものが、世界への贈り物です。","今あるものに目を向けない。世界は恵みに溢れています。","集中する時間は、心を研ぎ澄ます儀式です。","自分を大切にできない人は、他人も大切にできません。","人生の正解は一つではない。あなたなりの正解を。","一期一会。出会うすべての人を大切にしましょう。","夢を描く力。それが未来を創るエネルギーです。","立ち止まってもいい。景色を楽しむ余裕を持ちましょう。","信念は、暗闇を照らす松明のようなものです。","心に潤いを。美しいものに触れる時間を作りましょう。","焦りは禁物。種を蒔いてすぐには花は咲きません。","自分の弱さを認めることが、本当の強さへの第一歩。","言葉にできない想いも、宇宙はすべて受け止めてくれます。","日常の当たり前の中に、奇跡は隠れています。","比べるべきは他人ではなく、昨日の自分です。","道に迷ったら、一番ワクワクする方を選んでみて。","あなたは一人ではありません。目に見えない繋がりを信じて。","心の鏡を磨き、真実を映し出しましょう。","優しさは、巡り巡って必ずあなたに帰ってきます。","変化を恐れず、新しい風を自分に取り込みましょう。","自分を褒めてあげてください。今日まで頑張ってきたことを。","どんな時も、心に一輪の花を絶やさないように。","目的地を忘れなければ、遠回りもまた楽し。","あなたの言葉が、誰かの背中を押す力になります。","静寂の中にこそ、本当の答えが眠っています。","自分の人生の主人公は、他の誰でもないあなたです。","小さな喜びを見つける天才になりましょう。","限界を決めているのは、いつだって自分自身です。","心を開けば、新しい世界があなたを歓迎してくれます。","挑戦することに遅すぎることはありません。","あなたの手は、誰かを助け、何かを創るためにあります。","直感は魂からのメッセージ。大切にしてください。","誠実さは、最も確かな信頼の礎となります。","雨の日は雨を楽しみ、晴れの日は晴れを喜ぶ。","自分の中に流れる生命の力を感じてみてください。","可能性は無限大。自ら枠を作らないように。","微笑みは、言葉を超えたコミュニケーションです。","何事も面白がること。それが人生を輝かせるコツです。","心に響く言葉を、お守りのように持ち歩きましょう。","あなたの光を誰にも消させてはいけません。","人生は修行ではなく、楽しむためのステージです。","感謝の言葉を口に出すたび、幸福が近づきます。","整理整頓は心の整理。身の回りを清めましょう。","与えることは、受け取ること以上に心を満たします。","あなたの情熱が、凍てついた心を動かします。","休むこともまた、大切な仕事の一部です。","素直な心は、すべての扉を開けるパスワード。","毎日が新しい誕生日。新しい自分を始めましょう。","自分らしく生きることが、最大の社会貢献です。","空を見上げる余裕を。心はいつも広くありたい。","宇宙は常にあなたを応援しています。","最後は必ずうまくいきます。そうでなければ最後ではない。","一歩ずつ、淡々と。それが最も遠くまで行く方法です。","今日も良い一日になります。心からそう信じて。","阿字の子が阿字のふるさと立ち出でて また阿字のふるさとへ帰る。","生れ生れ生れ生れて生のおわりに暗く 死に死に死に死んで死の始めに冥し。"];
     const weatherIcons = {0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌦️",61:"🌧️",63:"🌧️",65:"🌧️",80:"🌦️",81:"🌧️",82:"🌧️",95:"⚡"};
 
     function updateQuote() {
@@ -193,15 +202,24 @@
             document.getElementById('badges').innerHTML = `<div class="badge"><span class="dot" style="background:${walk.c}"></span>${walk.t}</div><div class="badge"><span class="dot" style="background:${laundry.c}"></span>${laundry.t}</div><div class="badge"><span class="dot" style="background:#03a9f4"></span>${getFashion(data.current_weather.temperature)}</div>`;
             const tomCode = data.daily.weathercode[1];
             document.getElementById('tom-info').innerHTML = `<span style="font-size:1.5rem;">${weatherIcons[tomCode]}</span> <span style="font-weight:700;">${Math.round(data.daily.temperature_2m_max[1])}° / ${Math.round(data.daily.temperature_2m_min[1])}°</span>`;
-            let hH = ''; const sunsetH = parseInt(data.daily.sunset[0].split('T')[1]);
-            data.hourly.time.forEach((t, i) => {
-                const h = parseInt(t.split('T')[1]);
-                if (t.includes(new Date().toLocaleDateString('sv')) && h >= hr && h <= sunsetH + 1) {
+            
+            let hH = ''; 
+            const sunsetStr = data.daily.sunset[0].split('T')[1];
+            const sunsetH = parseInt(sunsetStr.split(':')[0], 10);
+            const todayStr = data.daily.time[0];
+
+            data.hourly.time.forEach((tStr, i) => {
+                const parts = tStr.split('T');
+                const datePart = parts[0];
+                const h = parseInt(parts[1].split(':')[0], 10);
+                
+                if (datePart === todayStr && h >= hr && h <= sunsetH + 1) {
                     hH += `<div class="h-item"><div style="font-size:0.7rem; font-weight:700;">${h==hr?'今':h+'時'}</div><div style="font-size:1.5rem; margin:4px 0;">${weatherIcons[data.hourly.weathercode[i]]||"☀️"}</div><div style="font-weight:700;">${Math.round(data.hourly.temperature_2m[i])}°</div></div>`;
                 }
             });
             document.getElementById('h-list').innerHTML = hH;
-            document.getElementById('h-foot').innerHTML = `<span>🌡️ ${rangeH}</span><span>🌅 ${data.daily.sunrise[0].split('T')[1]}</span><span>🌇 ${data.daily.sunset[0].split('T')[1]}</span>`;
+            document.getElementById('h-foot').innerHTML = `<span>🌡️ ${rangeH}</span><span>🌅 ${data.daily.sunrise[0].split('T')[1]}</span><span>🌇 ${sunsetStr}</span>`;
+            
             let wH = ''; for(let i=0; i<7; i++) {
                 const d = new Date(data.daily.time[i]);
                 wH += `<div><div>${i==0?'今日':['日','月','火','水','木','金','土'][d.getDay()]}</div><div style="font-size:1.3rem; margin:4px 0;">${weatherIcons[data.daily.weathercode[i]]}</div><div>${Math.round(data.daily.temperature_2m_max[i])}°</div></div>`;
@@ -210,14 +228,10 @@
         } catch(e) { console.error(e); }
     }
 
-    /**
-     * 【高速版】サッカー順位取得ロジック
-     */
     async function updateSoccerRank() {
         const rankValueEl = document.getElementById('rank-value');
         const targetUrl = 'https://koko-soccer.com/score/4345';
         const cacheKey = 'joetsu_soccer_rank_cache_v2';
-        const cacheMaxAge = 1000 * 60 * 60 * 6;
 
         function renderRank(rankNum, pointsStr, isCache) {
             rankValueEl.classList.remove('loading-dots');
@@ -225,11 +239,7 @@
         }
 
         function saveCache(rankNum, pointsStr) {
-            localStorage.setItem(cacheKey, JSON.stringify({
-                rankNum,
-                pointsStr,
-                savedAt: Date.now()
-            }));
+            localStorage.setItem(cacheKey, JSON.stringify({ rankNum, pointsStr, savedAt: Date.now() }));
         }
 
         function readCache() {
@@ -237,30 +247,21 @@
                 const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
                 if (!cached || !cached.rankNum || !cached.pointsStr) return null;
                 return cached;
-            } catch(e) {
-                return null;
-            }
+            } catch(e) { return null; }
         }
 
         function timeoutPromise(ms) {
-            return new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Timeout')), ms);
-            });
+            return new Promise((_, reject) => { setTimeout(() => reject(new Error('Timeout')), ms); });
         }
 
         async function fetchWithTimeout(url, ms) {
             const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), ms);
             try {
-                const res = await fetch(url, {
-                    signal: controller.signal,
-                    cache: 'no-store'
-                });
+                const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
                 if (!res.ok) throw new Error('Fetch failed: ' + res.status);
                 return await res.text();
-            } finally {
-                clearTimeout(timer);
-            }
+            } finally { clearTimeout(timer); }
         }
 
         function extractHtml(proxyName, text) {
@@ -288,23 +289,14 @@
             const rankMatch = rankStr.match(/\d+/) || rowText.match(/(\d+)\s*位/);
             const rankNum = rankMatch ? rankMatch[0].replace(/\D/g, '') : rankStr.replace(/\D/g, '');
 
-            const pointCandidates = cells
-                .map(v => v.match(/\d+/) ? v.match(/\d+/)[0] : '')
-                .filter(Boolean);
-
-            if (!pointsStr.match(/\d+/) && pointCandidates.length >= 3) {
-                pointsStr = pointCandidates[2];
-            }
+            const pointCandidates = cells.map(v => v.match(/\d+/) ? v.match(/\d+/)[0] : '').filter(Boolean);
+            if (!pointsStr.match(/\d+/) && pointCandidates.length >= 3) { pointsStr = pointCandidates[2]; }
 
             const pointsMatch = pointsStr.match(/\d+/);
             const pointsNum = pointsMatch ? pointsMatch[0] : pointsStr;
 
             if (!rankNum) throw new Error('Rank number not found');
-
-            return {
-                rankNum,
-                pointsStr: pointsNum || '--'
-            };
+            return { rankNum, pointsStr: pointsNum || '--' };
         }
 
         async function fetchRankByProxy(proxy) {
@@ -314,44 +306,24 @@
         }
 
         const cached = readCache();
-        if (cached) {
-            renderRank(cached.rankNum, cached.pointsStr, true);
-        }
+        if (cached) { renderRank(cached.rankNum, cached.pointsStr, true); }
 
         const proxies = [
-            {
-                name: 'allorigins',
-                url: `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&_=${Date.now()}`,
-                timeout: 2600
-            },
-            {
-                name: 'corsproxy',
-                url: `https://corsproxy.io/?${encodeURIComponent(targetUrl)}&_=${Date.now()}`,
-                timeout: 2600
-            },
-            {
-                name: 'codetabs',
-                url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}&_=${Date.now()}`,
-                timeout: 2600
-            }
+            { name: 'allorigins', url: `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&_=${Date.now()}`, timeout: 2600 },
+            { name: 'corsproxy', url: `https://corsproxy.io/?${encodeURIComponent(targetUrl)}&_=${Date.now()}`, timeout: 2600 },
+            { name: 'codetabs', url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}&_=${Date.now()}`, timeout: 2600 }
         ];
 
         try {
-            const rank = await Promise.race([
-                Promise.any(proxies.map(fetchRankByProxy)),
-                timeoutPromise(3200)
-            ]);
-
+            const rank = await Promise.race([ Promise.any(proxies.map(fetchRankByProxy)), timeoutPromise(3200) ]);
             renderRank(rank.rankNum, rank.pointsStr, false);
             saveCache(rank.rankNum, rank.pointsStr);
         } catch (err) {
             console.warn("Soccer fetch failed:", err);
-
             if (!cached) {
                 rankValueEl.classList.remove('loading-dots');
                 rankValueEl.innerText = "取得待ち";
             }
-
             setTimeout(updateSoccerRank, 10000);
         }
     }
@@ -360,14 +332,8 @@
         "2026-06": {
             eventName: "6月のピクミン情報",
             cards: [
-                {
-                    label: "今月のお題",
-                    url: "https://raw.githubusercontent.com/takaya5233/pikmin-weather/main/6_odai.png"
-                },
-                {
-                    label: "ボーナス報酬",
-                    url: "https://raw.githubusercontent.com/takaya5233/pikmin-weather/main/6_hoshu.png"
-                }
+                { label: "今月のお題", url: "https://raw.githubusercontent.com/takaya5233/pikmin-weather/main/6_odai.png" },
+                { label: "ボーナス報酬", url: "https://raw.githubusercontent.com/takaya5233/pikmin-weather/main/6_hoshu.png" }
             ]
         }
     };
@@ -383,10 +349,15 @@
         content.innerHTML = d.cards.filter(c => c.url).map(c => `<div class="p-img-card"><div style="font-size:0.75rem; font-weight:900; text-align:center; padding:6px;">${c.label}</div><img src="${c.url}" alt="${c.label}"></div>`).join('');
     }
 
-    updateQuote(); updateTime(); setInterval(updateTime, 60000);
-    navigator.geolocation.getCurrentPosition(fetchWeather);
-    renderPikmin();
-    updateSoccerRank();
+    updateQuote(); updateTime(); setInterval(updateTime, 60000); renderPikmin(); updateSoccerRank();
+
+    navigator.geolocation.getCurrentPosition(
+        fetchWeather,
+        (error) => {
+            console.warn("位置情報の取得に失敗したためデフォルト座標で表示します:", error);
+            fetchWeather({ coords: { latitude: 35.485, longitude: 140.117 } });
+        }
+    );
 </script>
 </body>
 </html>
